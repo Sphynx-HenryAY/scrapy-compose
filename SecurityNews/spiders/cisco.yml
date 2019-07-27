@@ -1,0 +1,43 @@
+selector: css
+
+parse_non_cisco:
+    severity: "@#severitycirclecontent::text"
+    id: "@#ud-advisory-identifier .divLabelContent::text"
+    first_published: "@#ud-published .divLabelContent::text"
+
+    "@.ud-main-link-list:nth-child(1)>h2, .ud-main-link-list:nth-child(1)>ul":
+        _type: alternating
+        key  : <even>
+        value: <odd>
+
+    "Revision History":
+        _type: tablize
+        table: "#ud-revision-history"
+        qhead: "thead th::text"
+        qrows: "tbody tr"
+        qrow : "td::text"
+
+    "Affected Primary Products":
+        _type: tablize
+        table: "#productsets table:contains('Primary Product')"
+        thead:
+            - Name
+            - Category
+            - Series
+        qrows: "tr:not(tr:nth-child(1))"
+        qrow : "td ::text"
+
+    "Affected Associated Products":
+        _type: tablize
+        table: "#productsets table:contains('Associated Product')"
+        thead:
+            - Name
+            - Category
+            - Series
+        qrows: "tr:not(tr:nth-child(1))"
+        qrow : "td ::text"
+
+parse_cisco:
+    severity: "@#severitycirclecontent::text"
+    id: "@#ud-advisory-identifier .divLabelContent::text"
+    first_published: "@#ud-published .divLabelContent::text"
