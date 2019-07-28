@@ -8,11 +8,10 @@ parse_bug_content:
     _type: nested
     key: '@.standard-text::text'
     value: '@:not([class*=standard-text]):not(a)::text'
-  '@.bug-content':
-    _type: nested
-    key: "@h4 ::text, p::text"
-    value:
-        _type: alternating
+  '@.date-container ::text':
+    _type: alternating
+  '@.bug-content ::text':
+    _type: alternating
 
 parse_bug_content_xpath: # equivalent xpath query
   id: '@//ul[@class="bread-crumbs"]//span/text()'
@@ -22,6 +21,8 @@ parse_bug_content_xpath: # equivalent xpath query
     _type: nested
     key: '@.//span[contains(@class, "standard-text")]/text()'
     value: '@.//span[not(contains(@class, "standard-text"))]/text()'
+  '@//p[@class="date-container"]//text()':
+    _type: alternating
   '@//div[contains(@class, "bug-content")]//text()':
     _type: alternating
 
