@@ -1,4 +1,5 @@
 
+from functools import lru_cache
 from abc import ABC as AbstractClass, abstractproperty, abstractmethod
 
 class Field( AbstractClass ):
@@ -8,6 +9,7 @@ class Field( AbstractClass ):
 	selector = None
 
 	_content = None
+	_sanitizer = None
 
 	def __init__( self, key = None, value = None, selector = None ):
 		self.key = key
@@ -18,8 +20,25 @@ class Field( AbstractClass ):
 	def content( self ): pass
 
 	@property
+	def sanitizer( self ):
+		if not self._sanitizer:
+			sanitizer_path = self.value.get( "sanitizer" )
+			if not sanitizer_path:
+				self._sanitizer = lambda x: x
+			else:
+				self._sanitizer = self.load_resource( sanitizer_path )
+		return self._sanitizer
+
+	@property
 	def syntax( self ):
 		return self.selector.__name__
+
+	@lru_cache( maxsize = 64 )
+	def load_resource( self, path ):
+		from importlib import import_module
+		mod, func = path.rsplit( ".", 1 )
+		return getattr( import_module( mod ), func )
+
 
 class FuncField( Field ):
 
