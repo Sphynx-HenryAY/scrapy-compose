@@ -17,11 +17,10 @@ class StringField( Field ):
 	def content( self ):
 		if self._content is None:
 
-			def realize( query ):
-				return realize( self.selector, query )
+			selector = self.selector
 
 			self._content = {
-				realize( self.key ): realize( self.value[ "value" ] )
+				realize( selector, self.key ): realize( selector, self.value[ "value" ] )
 			}
 
 		return self._content
