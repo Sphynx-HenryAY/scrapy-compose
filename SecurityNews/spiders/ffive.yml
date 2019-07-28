@@ -10,8 +10,12 @@ parse_bug_content:
     value: '@:not([class*=standard-text]):not(a)::text'
   '@.date-container ::text':
     _type: alternating
-  '@.bug-content ::text':
-    _type: alternating
+    sanitizer: "scrapy_compose.utils.stripped"
+  '@.bug-content':
+    _type: nested
+    key: "@h4 ::text, p::text"
+    value:
+        _type: alternating
 
 parse_bug_content_xpath: # equivalent xpath query
   id: '@//ul[@class="bread-crumbs"]//span/text()'
@@ -23,6 +27,7 @@ parse_bug_content_xpath: # equivalent xpath query
     value: '@.//span[not(contains(@class, "standard-text"))]/text()'
   '@//p[@class="date-container"]//text()':
     _type: alternating
+    sanitizer: "scrapy_compose.utils.stripped"
   '@//div[contains(@class, "bug-content")]//text()':
     _type: alternating
 
