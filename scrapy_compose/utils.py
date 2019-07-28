@@ -14,7 +14,10 @@ class Utils:
 
 	@staticmethod
 	def xtring( selector ):
-		return selector.xpath( "string()" ).get().strip()
+		len_selected = len( selector )
+		if len_block < 2:
+			return [ selector.xpath( "string()" ).get( "" ).strip() ]
+		return [ x.strip() for x in selector.xpath( "string()" ).extract() ]
 
 	@staticmethod
 	def stripped( str_arr ):
