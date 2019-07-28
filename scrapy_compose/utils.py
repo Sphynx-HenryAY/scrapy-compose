@@ -1,6 +1,6 @@
 
 def realize( selector, query ):
-	if query.startswith( "" ):
+	if query.startswith( "@" ):
 		selected = selector( query[1:] )
 		if not selected:
 			return ""
