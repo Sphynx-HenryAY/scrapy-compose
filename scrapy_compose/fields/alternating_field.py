@@ -21,11 +21,9 @@ class AlternatingField( Field ):
 		return self._content
 
 	def get_data( self, selected, get_text = False ):
-		if not selected:
-			return ""
-		if not get_text:
-			selected = selected.xpath( "string()" )
-		return selected.get().strip()
+		if get_text:
+			return ( selected.get() or "" ).strip()
+		return Utils.xtring( selected )[0]
 
 	def _content_plain( self ):
 
