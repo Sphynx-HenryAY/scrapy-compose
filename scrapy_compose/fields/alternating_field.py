@@ -34,7 +34,7 @@ class AlternatingField( Field ):
 		get_text = key.endswith( text_sufx )
 		get_data = self.get_data
 
-		rows = Utils.stripped( [ get_data( r, get_text ) for r in self.selector( key ) ] )
+		rows = [ get_data( r, get_text ) for r in self.selector( key ) ]
 
 		return dict( zip( rows[0::2], rows[1::2] ) )
 
