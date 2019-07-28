@@ -1,5 +1,5 @@
 
-from ..utils import Utils
+from ..utils import xtring
 from .field import Field
 
 class AlternatingField( Field ):
@@ -23,7 +23,7 @@ class AlternatingField( Field ):
 	def get_data( self, selected, is_text = False ):
 		if is_text:
 			return ( selected.get() or "" ).strip()
-		return Utils.xtring( selected )[0]
+		return xtring( selected )[0]
 
 	def _content_plain( self ):
 

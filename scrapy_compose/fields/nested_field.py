@@ -1,5 +1,5 @@
 
-from ..utils import Utils
+from ..utils import stripped
 from .field import Field
 
 class NestedField( Field ):
@@ -21,7 +21,6 @@ class NestedField( Field ):
 			rows = self.selector( self.key[1:] )
 			value = self.value
 
-		stripped = Utils.stripped
 		def xtrt( sel, q ):
 			return " ".join( stripped( sel( q ).extract() ) )
 

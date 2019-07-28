@@ -8,8 +8,6 @@ from .nested_field import NestedField
 from .string_field import StringField
 from .tablize_field import TablizeField
 
-from ..utils import Utils
-
 class Types:
 
 	@classmethod

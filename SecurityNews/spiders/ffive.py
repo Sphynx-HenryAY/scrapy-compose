@@ -5,7 +5,7 @@ import scrapy
 from SecurityNews.spiders.base import TIPSpider
 from SecurityNews.items import SecurityNewsItem
 
-from scrapy_compose.utils import Utils
+from scrapy_compose.utils import stripped
 
 class FfiveSpider( TIPSpider ):
 	name = "ffive"
@@ -34,7 +34,7 @@ class FfiveSpider( TIPSpider ):
 
 		context[ "id" ] = context[ "id" ].split()[-1]
 
-		date_info = Utils.stripped( response.css( ".date-container ::text" ).extract() )
+		date_info = stripped( response.css( ".date-container ::text" ).extract() )
 		for k, v in zip( date_info[0::2], date_info[1::2] ):
 			context[ k ] = v
 

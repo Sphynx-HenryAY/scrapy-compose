@@ -40,8 +40,3 @@ def tablize(
 		) )
 		for row in table( qrows )
 	)
-
-class Utils:
-	for _k, _v in globals().items():
-		if not _k.startswith( "__" ) and callable( _v ):
-			vars()[_k] = _v

@@ -4,7 +4,7 @@ from itertools import zip_longest
 
 import scrapy
 
-from scrapy_compose.utils import Utils
+from scrapy_compose.utils import stripped
 
 from SecurityNews.spiders.base import TIPSpider
 from SecurityNews.items import SecurityNewsItem
@@ -14,7 +14,7 @@ class PaloAltoSpider( TIPSpider ):
 	start_urls = [ "https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000Cm68CAC" ]
 
 	def merge_td( self, td ):
-		return "".join( Utils.stripped( td.css( "*::text" ).extract() ) )
+		return "".join( stripped( td.css( "*::text" ).extract() ) )
 
 	def parse( self, response ):
 

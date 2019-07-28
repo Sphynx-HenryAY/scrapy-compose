@@ -8,7 +8,7 @@ from SecurityNews.spiders.base import TIPSpider
 from SecurityNews.items import SecurityNewsItem
 
 from scrapy_compose.fields import Fields
-from scrapy_compose.utils import Utils
+from scrapy_compose.utils import realize, xtring, tablize
 
 class CiscoSpider( TIPSpider ):
 	name = 'cisco'
@@ -31,10 +31,6 @@ class CiscoSpider( TIPSpider ):
 		context = defaultdict( list )
 		context.update( response.meta.get( "compose", {} ) )
 		context[ "is_cisco" ] = response.meta[ "is_cisco" ]
-
-		realize = Utils.realize
-		xtring = Utils.xtring
-		tablize = Utils.tablize
 
 		title_node = None
 		for i, ele in enumerate( response.css(

@@ -1,5 +1,5 @@
 
-from ..utils import Utils
+from ..utils import realize
 from .field import Field
 
 class StringField( Field ):
@@ -18,7 +18,7 @@ class StringField( Field ):
 		if self._content is None:
 
 			def realize( query ):
-				return Utils.realize( self.selector, query )
+				return realize( self.selector, query )
 
 			self._content = {
 				realize( self.key ): realize( self.value[ "value" ] )
