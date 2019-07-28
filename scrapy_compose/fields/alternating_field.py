@@ -20,8 +20,8 @@ class AlternatingField( Field ):
 
 		return self._content
 
-	def get_data( self, selected, get_text = False ):
-		if get_text:
+	def get_data( self, selected, is_text = False ):
+		if is_text:
 			return ( selected.get() or "" ).strip()
 		return Utils.xtring( selected )[0]
 
@@ -31,10 +31,10 @@ class AlternatingField( Field ):
 		text_sufx = "::text" if syntax == "css" else "text()"
 
 		key = self.key[1:]
-		get_text = key.endswith( text_sufx )
+		is_text = key.endswith( text_sufx )
 		get_data = self.get_data
 
-		rows = [ get_data( r, get_text ) for r in self.selector( key ) ]
+		rows = [ get_data( r, is_text ) for r in self.selector( key ) ]
 
 		return dict( zip( rows[0::2], rows[1::2] ) )
 
@@ -44,15 +44,15 @@ class AlternatingField( Field ):
 		text_sufx = "::text" if syntax == "css" else "text()"
 
 		kq, vq = self.value[ "key" ][1:], self.value[ "value" ][1:]
-		kget, vget = kq.endswith( text_sufx ), vq.endswith( text_sufx )
+		k_is_text, v_is_text = kq.endswith( text_sufx ), vq.endswith( text_sufx )
 
 		get_data = self.get_data
 
 		rows = self.selector( self.key[1:] )
 		context = {}
 		for ksel, vsel in zip( rows[0::2], rows[1::2] ):
-			kdata = get_data( getattr( ksel, syntax )( kq ), kget )
+			kdata = get_data( getattr( ksel, syntax )( kq ), k_is_text )
 			if kdata:
-				context[ kdata ] = get_data( getattr( vsel, syntax )( vq ), vget )
+				context[ kdata ] = get_data( getattr( vsel, syntax )( vq ), v_is_text )
 
 		return context
