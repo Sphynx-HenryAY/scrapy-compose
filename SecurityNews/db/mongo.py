@@ -1,5 +1,5 @@
 
-from .abc import AbstractConnection
+from .base_connection import AbstractConnection
 
 class MongodbConnection( AbstractConnection ):
 
