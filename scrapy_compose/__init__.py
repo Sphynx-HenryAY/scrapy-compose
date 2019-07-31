@@ -29,7 +29,11 @@ def compose( func ):
 		else:
 			spider_config = load_config( func.__module__ )
 
-		if spider_config is None or fname not in spider_config:
+		if (
+				spider_config is None or
+				fname not in spider_config or
+				not spider_config[ fname ].get( "_item", {} )
+			):
 			return func( self, response )
 
 		from .fields import Fields
@@ -37,11 +41,16 @@ def compose( func ):
 		f_config = spider_config[ fname ]
 		selector = getattr( response, spider_config.get( "selector", "css" ) )
 
+		item = f_config.pop( "_item" )
+
 		context = {}
 
 		for k, v in f_config.items():
 			field = Fields.by_value( v )
 			context.update( field( k, v, selector ).content )
+
+		if item:
+			return load_resource( item )( **context )
 
 		response.meta[ "compose" ] = context
 
