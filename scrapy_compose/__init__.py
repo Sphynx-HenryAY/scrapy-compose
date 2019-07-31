@@ -13,6 +13,12 @@ def load_config( spider_name ):
 	except FileNotFoundError:
 		return None
 
+@lru_cache( maxsize = 64 )
+def load_resource( path ):
+	from importlib import import_module
+	mod, func = path.rsplit( ".", 1 )
+	return getattr( import_module( mod ), func )
+
 def compose( func ):
 
 	def func_wrapper( self, response, *args, **kwargs ):

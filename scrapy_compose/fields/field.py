@@ -30,9 +30,10 @@ class Field( AbstractClass ):
 
 	def _init_sanitizers( self ):
 
+		from .. import load_resource
+
 		v = self.value
 		sntzs = self._sntzs
-		load_rsrc = self.load_resource
 
 		default_sntz = lambda x: x
 
@@ -44,11 +45,11 @@ class Field( AbstractClass ):
 				sntz = default_sntz
 			else:
 				if isinstance( sntz_paths, str ):
-					sntz = load_rsrc( sntz_paths )
+					sntz = load_resource( sntz_paths )
 				elif isinstance( sntz_paths, list ):
 					prv_sntz = None
 					for path in sntz_paths:
-						sntz = load_rsrc( path )
+						sntz = load_resource( path )
 
 						if prv_sntz:
 							_sntz = sntz
@@ -62,12 +63,6 @@ class Field( AbstractClass ):
 	@property
 	def syntax( self ):
 		return self.selector.__name__
-
-	@lru_cache( maxsize = 64 )
-	def load_resource( self, path ):
-		from importlib import import_module
-		mod, func = path.rsplit( ".", 1 )
-		return getattr( import_module( mod ), func )
 
 
 class FuncField( Field ):
