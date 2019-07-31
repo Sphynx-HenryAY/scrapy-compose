@@ -14,3 +14,5 @@ class SecurityNewsItem( scrapy.Item ):
 	def DynamicItem( cls, **kwargs ):
 		cls.fields = { k: scrapy.Field() for k in kwargs }
 		return cls( **kwargs )
+
+DynamicItem = SecurityNewsItem.DynamicItem
