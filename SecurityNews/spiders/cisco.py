@@ -8,7 +8,7 @@ from SecurityNews.spiders.base import TIPSpider
 from SecurityNews.items import SecurityNewsItem
 
 from scrapy_compose.fields import Fields
-from scrapy_compose.utils import realize, xtring, tablize
+from scrapy_compose.utils import realize, tablize
 
 class CiscoSpider( TIPSpider ):
 	name = 'cisco'
@@ -32,6 +32,9 @@ class CiscoSpider( TIPSpider ):
 		context.update( response.meta.get( "compose", {} ) )
 		context[ "is_cisco" ] = response.meta[ "is_cisco" ]
 
+		def xtring( sel_list ):
+			return [ x.strip() for x in sel_list.xpath( "string()" ).extract() ]
+
 		title_node = None
 		for i, ele in enumerate( response.css(
 				f".ud-main-link-list:nth-child(1)>h2,"
@@ -44,10 +47,13 @@ class CiscoSpider( TIPSpider ):
 
 				context[ title ].extend( tablize(
 					table = ele.css,
-					thead = [ " ".join( xtring( h ).split() ) for h in ele.css( "thead th" ) ],
+					thead = [
+						" ".join( x.split() )
+						for x in xtring( ele.css( "thead th" ) )
+					],
 					qrows = "tbody tr",
 					qrow = "td",
-					row_process = lambda r: ( xtring( col ) for col in r )
+					row_process = xtring
 				) )
 
 		for table in response.css( ".ud-main-link-list:nth-child(1)>ul table" ):
@@ -62,6 +68,7 @@ class CiscoSpider( TIPSpider ):
 			value = {
 				"key": "@.hbuttonelement",
 				"value": "@.ud-innercontent-area",
+				"packing": "scrapy_compose.sanitizers.strip",
 			}
 		).content )
 

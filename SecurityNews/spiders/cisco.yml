@@ -7,8 +7,7 @@ parse_non_cisco:
 
     "@.ud-main-link-list:nth-child(1)>h2, .ud-main-link-list:nth-child(1)>ul":
         _type: alternating
-        key  : <even>
-        value: <odd>
+        packing: "scrapy_compose.sanitizers.strip"
 
     "Revision History":
         _type: tablize

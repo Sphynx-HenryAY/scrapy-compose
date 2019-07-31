@@ -1,27 +1,20 @@
 
 def realize( selector, query ):
-	if query.startswith( "@" ):
-		selected = selector( query[1:] )
-		if not selected:
-			return ""
-		if len( selected ) == 1:
-			return selected.get().strip()
-		return "".join( selected.extract() ).strip()
-	return query
+	if not query.startswith( "@" ):
+		return query
 
-def xtring( selector ):
-	len_selected = len( selector )
-	if len_block < 2:
-		return [ selector.xpath( "string()" ).get( "" ).strip() ]
-	return [ x.strip() for x in selector.xpath( "string()" ).extract() ]
+	sel_list = selector( query[1:] )
 
-def stripped( str_arr ):
-	concrete = []
-	for x in str_arr:
-		x_strip = x.strip()
-		if x_strip:
-			concrete.append( x_strip )
-	return concrete
+	syntax = selector.__name__
+	text_sufx = "::text" if syntax == "css" else "text()"
+
+	if not query.endswith( text_sufx ):
+		xel_list = sel_list.xpath( "string()" )
+		# if xpath string is applicable, use it
+		if xel_list:
+			sel_list = xel_list
+
+	return sel_list.get( "" ).strip()
 
 def tablize(
 		table = None,

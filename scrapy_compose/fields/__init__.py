@@ -3,7 +3,6 @@ from abc import ABC as AbstractClass
 from collections import defaultdict, namedtuple
 
 from .alternating_field import AlternatingField
-from .matryoshka_field import MatryoshkaField
 from .nested_field import NestedField
 from .string_field import StringField
 from .tablize_field import TablizeField

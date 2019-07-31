@@ -1,5 +1,5 @@
 
-from ..utils import stripped
+from ..sanitizers import concreted
 from .field import Field
 
 class NestedField( Field ):
@@ -7,35 +7,23 @@ class NestedField( Field ):
 	@property
 	def content( self ):
 		if self._content is None:
-			self._content = self._init_content( init = True )
-		return self._content
 
-	def _init_content( self, init = False,
-			context = None,
-			rows = None,
-			value = None,
-		):
-
-		if context is None:
-			context = {}
-			rows = self.selector( self.key[1:] )
+			syntax = self.syntax
 			value = self.value
+			rkey, rvalue = value[ "key" ], value[ "value" ]
 
-		def xtrt( sel, q ):
-			return " ".join( stripped( sel( q ).extract() ) )
+			from . import Fields
+			field = Fields.by_value( rvalue )
 
-		rkey, rvalue = value[ "key" ], value[ "value" ]
-		syntax = self.syntax
-
-		for row in rows:
-			sel = getattr( row, syntax )
-			if isinstance( rvalue, dict ):
-				from . import Fields
-				field = Fields.by_value( rvalue )
+			context = {}
+			for row in self.selector( self.key[1:] ):
 				context.update(
-					field( key = rkey, value = rvalue, selector = sel ).content
+					field(
+						key = rkey,
+						value = rvalue,
+						selector = getattr( row, syntax )
+					).content
 				)
-			else:
-				context[ xtrt( sel, rkey[1:] ) ] = xtrt( sel, rvalue[1:] )
 
-		return context
+			self._content = context
+		return self._content

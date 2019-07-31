@@ -9,25 +9,55 @@ class Field( AbstractClass ):
 	selector = None
 
 	_content = None
-	_sanitizer = None
+
+	sanitize_timing = ()
 
 	def __init__( self, key = None, value = None, selector = None ):
 		self.key = key
 		self.value = value
 		self.selector = selector
 
+		self._sntzs = {}
+
 	@abstractproperty
 	def content( self ): pass
 
 	@property
-	def sanitizer( self ):
-		if not self._sanitizer:
-			sanitizer_path = self.value.get( "sanitizer" )
-			if not sanitizer_path:
-				self._sanitizer = lambda x: x
+	def sanitizers( self ):
+		if not self._sntzs:
+			self._init_sanitizers()
+		return self._sntzs
+
+	def _init_sanitizers( self ):
+
+		v = self.value
+		sntzs = self._sntzs
+		load_rsrc = self.load_resource
+
+		default_sntz = lambda x: x
+
+		for timing in self.sanitize_timing:
+
+			sntz_paths = v.get( timing )
+
+			if not sntz_paths:
+				sntz = default_sntz
 			else:
-				self._sanitizer = self.load_resource( sanitizer_path )
-		return self._sanitizer
+				if isinstance( sntz_paths, str ):
+					sntz = load_rsrc( sntz_paths )
+				elif isinstance( sntz_paths, list ):
+					prv_sntz = None
+					for path in sntz_paths:
+						sntz = load_rsrc( path )
+
+						if prv_sntz:
+							_sntz = sntz
+							sntz = lambda v: _sntz( prv_sntz( v ) )
+
+						prv_sntz = sntz
+
+			sntzs[timing] = sntz
+			setattr( self, timing, sntz )
 
 	@property
 	def syntax( self ):

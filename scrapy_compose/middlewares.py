@@ -76,7 +76,8 @@ class ScrapyComposeMiddleware(object):
 			if config:
 				for fname in set( config ) & set( dir( spider.__class__ ) ):
 					func = getattr( spider.__class__, fname )
-					setattr( spider.__class__, fname, compose( func ) )
+					if callable( func ):
+						setattr( spider.__class__, fname, compose( func ) )
 
 			setattr( spider.__class__, "spider-config", config )
 			spider.logger.info( '%s with spider-compose initialized' % spider.name )

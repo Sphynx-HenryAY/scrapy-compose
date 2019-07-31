@@ -1,61 +1,68 @@
 
-from ..utils import xtring
 from .field import Field
 
 class AlternatingField( Field ):
 
+	sanitize_timing = ( "pre_pack", "packing", "post_pack" )
+
 	@property
 	def content( self ):
-
-		if self._content is None:
+		if not self._content:
+			self._init_sanitizers()
 
 			value = self.value
+			rk, rv = value.get( "key", "" ), value.get( "value", "" )
 			if (
-					value.get( "key", "" ).startswith( "@" ) and
-					value.get( "value", "" ).startswith( "@" )
-				):
-				self._content = self._content_query()
+				( rk and rk.startswith( "@" ) ) and
+				( rv and rv.startswith( "@" ) )
+			):
+				krows, vrows = self.query_content()
 			else:
-				self._content = self._content_plain()
+				krows, vrows = self.text_content()
+
+			self._content = self.post_pack( dict( zip( krows, vrows ) ) )
 
 		return self._content
 
-	def get_data( self, selected, is_text = False ):
-		if is_text:
-			return ( selected.get() or "" ).strip()
-		return xtring( selected )[0]
+	def is_text_query( self, query ):
+		return query.endswith( "::text" if self.syntax == "css" else "text()" )
 
-	def _content_plain( self ):
-
-		syntax = self.syntax
-		text_sufx = "::text" if syntax == "css" else "text()"
-
-		key = self.key[1:]
-		is_text = key.endswith( text_sufx )
-		get_data = self.get_data
-
-		rows = self.sanitizer( [
-			get_data( r, is_text )
-			for r in self.selector( key )
-		] )
-
-		return dict( zip( rows[0::2], rows[1::2] ) )
-
-	def _content_query( self ):
-
-		syntax = self.syntax
-		text_sufx = "::text" if syntax == "css" else "text()"
-
-		kq, vq = self.value[ "key" ][1:], self.value[ "value" ][1:]
-		k_is_text, v_is_text = kq.endswith( text_sufx ), vq.endswith( text_sufx )
-
-		get_data = self.get_data
+	def query_content( self ):
 
 		rows = self.selector( self.key[1:] )
-		context = {}
-		for ksel, vsel in zip( rows[0::2], rows[1::2] ):
-			kdata = get_data( getattr( ksel, syntax )( kq ), k_is_text )
-			if kdata:
-				context[ kdata ] = get_data( getattr( vsel, syntax )( vq ), v_is_text )
+		rows_sel = getattr( rows, self.syntax )
 
-		return context
+		value = self.value
+		rk, rv = value[ "key" ][1:], value[ "value" ][1:]
+
+		selected = []
+		packing = self.packing
+		is_text_query = self.is_text_query
+
+		for query in [ rk, rv ]:
+			sub_rows = rows_sel( query )
+
+			if not is_text_query( query ):
+				sub_rows = sub_rows.xpath( "string()" )
+
+			prepacked = self.pre_pack( sub_rows.extract() )
+
+			selected.append( [
+				self.packing( x ) for x in prepacked
+			] )
+
+		return selected
+
+	def text_content( self ):
+
+		key = self.key[1:]
+
+		rows = self.selector( key )
+		if not self.is_text_query( key ):
+			rows = rows.xpath( "string()" )
+
+		prepacked = self.pre_pack( rows.extract() )
+		packing = self.packing
+		rows = [ packing( x ) for x in prepacked ]
+
+		return rows[0::2], rows[1::2]
