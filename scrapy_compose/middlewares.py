@@ -29,8 +29,10 @@ class ScrapyComposeMiddleware(object):
 
 		from scrapy import Item
 
-		from scrapy_compose import load_config, output
+		from scrapy_compose import output
+		from scrapy_compose.load import config as load_config
 		from SecurityNews.items import SecurityNewsItem
+
 		config = load_config( spider.__module__ )
 
 		if not config:
@@ -67,7 +69,8 @@ class ScrapyComposeMiddleware(object):
 
 	def spider_opened(self, spider):
 		if not hasattr( spider.__class__, "spider-config" ):
-			from scrapy_compose import load_config, compose
+			from scrapy_compose import compose
+			from scrapy_compose.load import config as load_config
 
 			spider_name = spider.__module__
 

@@ -1,23 +1,4 @@
-from . import fields, utils, sanitizers
-
-from functools import lru_cache
-
-@lru_cache( maxsize = 64 )
-def load_config( spider_name ):
-
-	import yaml
-
-	try:
-		with open( f"{spider_name.replace('.','/')}.yml", "r" ) as config_f:
-			return yaml.safe_load( config_f )
-	except FileNotFoundError:
-		return None
-
-@lru_cache( maxsize = 64 )
-def load_resource( path ):
-	from importlib import import_module
-	mod, func = path.rsplit( ".", 1 )
-	return getattr( import_module( mod ), func )
+from . import fields, utils, sanitizers, load
 
 def compose( func ):
 
@@ -27,13 +8,9 @@ def compose( func ):
 		if hasattr( self.__class__, "spider-config" ):
 			spider_config = getattr( self.__class__, "spider-config" )
 		else:
-			spider_config = load_config( func.__module__ )
+			spider_config = load.config( func.__module__ )
 
-		if (
-				spider_config is None or
-				fname not in spider_config or
-				not spider_config[ fname ].get( "_item", {} )
-			):
+		if spider_config is None or fname not in spider_config:
 			return func( self, response )
 
 		from .fields import Fields
@@ -41,7 +18,7 @@ def compose( func ):
 		f_config = spider_config[ fname ]
 		selector = getattr( response, spider_config.get( "selector", "css" ) )
 
-		item = f_config.pop( "_item" )
+		item = f_config.pop( "_item", {} )
 
 		context = {}
 
@@ -50,7 +27,7 @@ def compose( func ):
 			context.update( field( k, v, selector ).content )
 
 		if item:
-			return load_resource( item )( **context )
+			return load.resource( item )( **context )
 
 		response.meta[ "compose" ] = context
 
@@ -61,7 +38,7 @@ def compose( func ):
 def output( spider_name, spider_item, config = None ):
 
 	if config is None:
-		config = load_config( spider_name )
+		config = load.config( spider_name )
 
 	filter_output = config.get( "output_filter", False )
 	exclude = config.get( "output_exclude", [] )

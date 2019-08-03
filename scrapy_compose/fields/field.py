@@ -30,7 +30,7 @@ class Field( AbstractClass ):
 
 	def _init_sanitizers( self ):
 
-		from .. import load_resource
+		from ..load import resource as load_resource
 
 		v = self.value
 		sntzs = self._sntzs

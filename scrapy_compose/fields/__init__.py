@@ -1,11 +1,8 @@
 
-from abc import ABC as AbstractClass
-from collections import defaultdict, namedtuple
+from .field import Field
+from ..load import package as load_package
 
-from .alternating_field import AlternatingField
-from .nested_field import NestedField
-from .string_field import StringField
-from .tablize_field import TablizeField
+__all__ = [ "Field" ]
 
 class Types:
 
@@ -24,39 +21,33 @@ class Types:
 
 	@classmethod
 	def register( cls, field ):
+
 		key = field.__name__[:-5].lower()
 		type_name = key.capitalize()
-		_type = namedtuple(
-			type_name,
-			"field key",
-			defaults = ( field, key )
-		)
+
+		if hasattr( cls, type_name ):
+			return getattr( cls, type_name )
+
+		from collections import namedtuple
+
+		_type = namedtuple( type_name, "field key", defaults = ( field, key ) )
 		setattr( cls, type_name, _type )
+
 		return _type
 
 class Fields:
 
-	for cname, field in globals().items():
-
-		if (
-				cname.endswith( "Field" ) and
-				AbstractClass not in field.__bases__
-			):
-			vars()[ cname ] = field
-			Types.register( field )
-
-	else:
-		del cname, field
-
 	@classmethod
 	def register( cls, field ):
-		from .field import Field
-		if Field in field.__bases__:
+		if cls.registrable( field ):
 			setattr( cls, field.__name__, field )
 			Types.register( field )
-		else:
-			raise TypeError( f"{field} is not {Field}" )
-		return field
+			return field
+
+	@staticmethod
+	def registrable( field ):
+		from inspect import isclass
+		return isclass( field ) and field is not Field and issubclass( field, Field )
 
 	@classmethod
 	def by_key( cls, parse_type ):
@@ -66,3 +57,4 @@ class Fields:
 	def by_value( cls, value ):
 		return Types.by_value( value ).field
 
+load_package( __name__, vars(), lambda c: Fields.register( c ) )
