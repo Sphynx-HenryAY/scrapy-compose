@@ -1,13 +1,13 @@
 
-from .field import Field
+from .fields import SpiderField as BaseField
 
-class AlternatingField( Field ):
+class AlternatingField( BaseField ):
 
 	sanitize_timing = ( "pre_pack", "packing", "post_pack" )
 
 	@property
-	def content( self ):
-		if not self._content:
+	def context( self ):
+		if not self._context:
 			self._init_sanitizers()
 
 			value = self.value
@@ -16,18 +16,18 @@ class AlternatingField( Field ):
 				( rk and rk.startswith( "@" ) ) and
 				( rv and rv.startswith( "@" ) )
 			):
-				krows, vrows = self.query_content()
+				krows, vrows = self.query_context()
 			else:
-				krows, vrows = self.text_content()
+				krows, vrows = self.text_context()
 
-			self._content = self.post_pack( dict( zip( krows, vrows ) ) )
+			self._context = self.post_pack( dict( zip( krows, vrows ) ) )
 
-		return self._content
+		return self._context
 
 	def is_text_query( self, query ):
 		return query.endswith( "::text" if self.syntax == "css" else "text()" )
 
-	def query_content( self ):
+	def query_context( self ):
 
 		rows = self.selector( self.key[1:] )
 		rows_sel = getattr( rows, self.syntax )
@@ -53,7 +53,7 @@ class AlternatingField( Field ):
 
 		return selected
 
-	def text_content( self ):
+	def text_context( self ):
 
 		key = self.key[1:]
 

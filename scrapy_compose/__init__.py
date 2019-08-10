@@ -1,5 +1,7 @@
 from . import fields, utils, sanitizers, load
 
+DEFAULT_SYNTAX = "css"
+
 def compose( func ):
 
 	def func_wrapper( self, response, *args, **kwargs ):
@@ -13,23 +15,18 @@ def compose( func ):
 		if spider_config is None or fname not in spider_config:
 			return func( self, response )
 
-		from .fields import Fields
+		syntax = spider_config.get( "selector", DEFAULT_SYNTAX )
 
-		f_config = spider_config[ fname ]
-		selector = getattr( response, spider_config.get( "selector", "css" ) )
+		cps = fields.compose.SpiderCompose(
+			key = fname,
+			value = spider_config[ fname ],
+			selector = getattr( response, syntax )
+		)
 
-		item = f_config.pop( "_item", {} )
+		if cps.is_endpoint:
+			return cps.endpoint
 
-		context = {}
-
-		for k, v in f_config.items():
-			field = Fields.by_value( v )
-			context.update( field( k, v, selector ).content )
-
-		if item:
-			return load.resource( item )( **context )
-
-		response.meta[ "compose" ] = context
+		response.meta[ "compose" ] = cps.context
 
 		return func( self, response, *args, **kwargs )
 

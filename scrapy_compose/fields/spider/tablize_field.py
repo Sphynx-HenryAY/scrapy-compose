@@ -1,8 +1,10 @@
 
-from ..utils import tablize, realize
-from .field import FuncField
+from scrapy_compose.utils import tablize, realize
 
-class TablizeField( FuncField ):
+from ..base import FuncField
+from .fields import SpiderField as BaseField
+
+class TablizeField( FuncField, BaseField ):
 
 	func = tablize
 

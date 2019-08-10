@@ -35,7 +35,8 @@ parse_non_cisco:
             - Series
         qrows: "tr:not(tr:nth-child(1))"
         qrow : "td ::text"
-    _item: 'SecurityNews.items.DynamicItem'
+    _meta:
+        item: 'SecurityNews.items.DynamicItem'
 
 parse_cisco:
     severity: "@#severitycirclecontent::text"

@@ -7,7 +7,7 @@ import scrapy
 from SecurityNews.spiders.base import TIPSpider
 from SecurityNews.items import SecurityNewsItem
 
-from scrapy_compose.fields import Fields
+from scrapy_compose.fields.spider import AlternatingField
 from scrapy_compose.utils import realize, tablize
 
 class CiscoSpider( TIPSpider ):
@@ -59,7 +59,7 @@ class CiscoSpider( TIPSpider ):
 		for table in response.css( ".ud-main-link-list:nth-child(1)>ul table" ):
 			table.root.getparent().remove( table.root )
 
-		context.update( Fields.AlternatingField(
+		context.update( AlternatingField(
 			selector = response.css,
 			key = (
 				f"@.ud-main-link-list:nth-child(1)>h2:contains('Affected Products'),"
@@ -70,7 +70,7 @@ class CiscoSpider( TIPSpider ):
 				"value": "@.ud-innercontent-area",
 				"packing": "scrapy_compose.sanitizers.strip",
 			}
-		).content )
+		).context )
 
 		yield SecurityNewsItem.DynamicItem( **context )
 

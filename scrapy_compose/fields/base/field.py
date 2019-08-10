@@ -1,5 +1,4 @@
 
-from functools import lru_cache
 from abc import ABC as AbstractClass, abstractproperty, abstractmethod
 
 class Field( AbstractClass ):
@@ -8,11 +7,11 @@ class Field( AbstractClass ):
 	value = None
 	selector = None
 
-	_content = None
+	_context = None
 
 	sanitize_timing = ()
 
-	def __init__( self, key = None, value = None, selector = None ):
+	def __init__( self, key = None, value = None, selector = None, **kwargs ):
 		self.key = key
 		self.value = value
 		self.selector = selector
@@ -20,7 +19,7 @@ class Field( AbstractClass ):
 		self._sntzs = {}
 
 	@abstractproperty
-	def content( self ): pass
+	def context( self ): pass
 
 	@property
 	def sanitizers( self ):
@@ -30,7 +29,7 @@ class Field( AbstractClass ):
 
 	def _init_sanitizers( self ):
 
-		from ..load import resource as load_resource
+		from scrapy_compose.load import resource as load_resource
 
 		v = self.value
 		sntzs = self._sntzs
@@ -69,8 +68,8 @@ class FuncField( Field ):
 
 	func = None
 
-	def __init__( self, key = None, value = None, selector = None ):
-		super().__init__( key = key, value = value, selector = selector )
+	def __init__( self, key = None, value = None, selector = None, **kwargs ):
+		super().__init__( key = key, value = value, selector = selector, **kwargs )
 
 		# self would not be passed to func call
 		self.func = self.__class__.func
@@ -83,12 +82,12 @@ class FuncField( Field ):
 		pass
 
 	@property
-	def content( self ):
-		if self._content is None:
-			self._content = self._init_content()
-		return self._content
+	def context( self ):
+		if self._context is None:
+			self._context = self._init_context()
+		return self._context
 
-	def _init_content( self ):
+	def _init_context( self ):
 		return self.make_field(
 			self.selector,
 			key = self.key,

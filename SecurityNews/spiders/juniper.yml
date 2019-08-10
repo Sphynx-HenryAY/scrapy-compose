@@ -6,4 +6,5 @@ parse:
     "@.contentrecord>strong:not(:contains('Related Links:')), .contentrecord>.nonfileattachment":
         _type: alternating
         packing: "scrapy_compose.sanitizers.strip"
-    _item: 'SecurityNews.items.DynamicItem'
+    _meta:
+        item: 'SecurityNews.items.DynamicItem'
