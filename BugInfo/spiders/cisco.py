@@ -4,11 +4,11 @@ from collections import defaultdict
 
 import scrapy
 
-from SecurityNews.spiders.base import TIPSpider
-from SecurityNews.items import SecurityNewsItem
+from scrapy_compose.fields.parser import AlternatingField
+from scrapy_compose.utils.context import realize, tablize
+from scrapy_compose.items import DynamicItem
 
-from scrapy_compose.fields.spider import AlternatingField
-from scrapy_compose.utils import realize, tablize
+from SecurityNews.spiders.base import TIPSpider
 
 class CiscoSpider( TIPSpider ):
 	name = 'cisco'
@@ -72,9 +72,9 @@ class CiscoSpider( TIPSpider ):
 			}
 		).context )
 
-		yield SecurityNewsItem.DynamicItem( **context )
+		yield DynamicItem( **context )
 
 	def parse_non_cisco(self, response):
 		context = response.meta.get( "compose", {} ) 
 		context[ "is_cisco" ] = response.meta[ "is_cisco" ]
-		yield SecurityNewsItem.DynamicItem( **context )
+		yield DynamicItem( **context )

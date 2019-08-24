@@ -31,9 +31,9 @@ class ScrapyComposeMiddleware(object):
 
 		from scrapy_compose import output
 		from scrapy_compose.load import config as load_config
-		from SecurityNews.items import SecurityNewsItem
+		from scrapy_compose.items import DynamicItem
 
-		config = load_config( spider.__module__ )
+		config = ( load_config( spider.__module__ ) or {} ).get( "output", {} )
 
 		if not config:
 			for i in result:
@@ -44,8 +44,8 @@ class ScrapyComposeMiddleware(object):
 
 		for i in result:
 			if isinstance( i, Item ):
-				yield SecurityNewsItem.DynamicItem(
-					**output( spider_name, i, config = config )
+				yield DynamicItem(
+					**output( i, config = config )
 				)
 			else:
 				yield i
@@ -74,13 +74,19 @@ class ScrapyComposeMiddleware(object):
 
 			spider_name = spider.__module__
 
-			config = load_config( spider_name )
+			config = load_config( spider_name ) or {}
+			parsers = config.get( "parsers", {} )
 
-			if config:
-				for fname in set( config ) & set( dir( spider.__class__ ) ):
-					func = getattr( spider.__class__, fname )
-					if callable( func ):
-						setattr( spider.__class__, fname, compose( func ) )
+			if parsers:
+
+				for pname in parsers:
+					p_func = getattr( spider.__class__, pname, None )
+
+					if not p_func:
+						def p_func( self, response ): pass
+						p_func.__name__ = pname
+
+					setattr( spider.__class__, pname, compose( p_func ) )
 
 			setattr( spider.__class__, "spider-config", config )
 			spider.logger.info( '%s with spider-compose initialized' % spider.name )

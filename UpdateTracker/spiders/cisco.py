@@ -1,15 +1,18 @@
 
+import scrapy
+
 import json
 import datetime
 
+from scrapy_compose.items import DynamicItem
+
 from SecurityNews.spiders.base import TIPSpider
-from SecurityNews.items import SecurityNewsItem
 
 class TraceCiscoSpider(TIPSpider):
 	sanitize = {
 		"\"RequestDispatcher\"": "'RequestDispatcher'"
 	}
-	name = "trace_cisco"
+	name = "cisco"
 
 	allowed_domains = ['tools.cisco.com']
 
@@ -39,12 +42,6 @@ class TraceCiscoSpider(TIPSpider):
 		
 		for bug in bugs:
 
-			bug_id = bug[ "id" ]
-			if bug_id == 1 or bug_id == 3:
-				bug['Cisco_product'] = True
-			elif bug_id == 6 or bug_id == 9:
-				bug['Cisco_product'] = False
-
 			bug['timestamp'] = timestamp
 
-			yield SecurityNewsItem.DynamicItem( **bug )
+			yield DynamicItem( **bug )

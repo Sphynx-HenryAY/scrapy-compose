@@ -1,0 +1,18 @@
+
+parsers:
+    parse:
+        _meta:
+            requests:
+                "@.story-link::attr(href)": parse_content
+                "@#blog-pager-older-link a::attr(href)": parse
+
+    parse_content:
+        url: "@[itemprop='mainEntityOfPage url']::attr(href)"
+        title: "@.post-body meta[itemprop=headline]::attr(content)"
+        date_published: "@.post-body meta[itemprop=datePublished]::attr(content)"
+        last_modified: "@.post-body meta[itemprop=dateModified]::attr(content)"
+        author: "@[itemprop=author] [itemprop=name]::attr(content)"
+        content: "@.articlebody>[dir=ltr]"
+        tags: "@.tags .categ span::text"
+        _meta:
+            item: "scrapy_compose.items.DynamicItem"

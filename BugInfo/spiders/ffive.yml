@@ -1,0 +1,69 @@
+syntax: css #or xpath
+
+parsers:
+  parse:
+    timestamp:
+      _type: timestamp
+    bug_list: "@a::text"
+    _meta:
+      item: "scrapy_compose.items.DynamicItem"
+      requests:
+        "@a::attr(href)": parse_bug_content
+
+  parse_bug_content:
+    id: '@.bread-crumbs span::text'
+    title: '@h2::text'
+    '@h2~p ::text':
+      _type: alternating
+      pre_pack: "scrapy_compose.sanitizers.concreted"
+    '@.container-fluid .col-sm-12': # bug info
+      _type: nested
+      key: '@.standard-text::text'
+      value:
+        _type: string
+        value: '@:not([class*=standard-text]):not(a)::text'
+        post_pack:
+          - "scrapy_compose.sanitizers.concreted"
+          - "scrapy_compose.sanitizers.join"
+    '@.date-container ::text':
+      _type: alternating
+      pre_pack: "scrapy_compose.sanitizers.concreted"
+    '@.bug-content':
+      _type: nested
+      key: "@h4 ::text, p::text"
+      value:
+          _type: alternating
+    timestamp:
+      _type: timestamp
+
+  parse_bug_content_xpath: # equivalent xpath query
+    id: '@//ul[@class="bread-crumbs"]//span/text()'
+    title: '@//h2/text()'
+    '@//h2/following-sibling::p/span/text()': '@//h2/following-sibling::p/text()' # last modified
+    '@//section[contains(@class, "container-fluid")]//div[contains(@class, "col-sm-12")]': # bug info
+      _type: nested
+      key: '@.//span[contains(@class, "standard-text")]/text()'
+      value: '@.//span[not(contains(@class, "standard-text"))]/text()'
+    '@//p[@class="date-container"]//text()':
+      _type: alternating
+      pre_pack: "scrapy_compose.sanitizers.concreted"
+    '@//div[contains(@class, "bug-content")]//text()':
+      _type: alternating
+    timestamp:
+      _type: timestamp
+
+output:
+  filter: off
+  exclude: []
+  keys:
+    id: id
+    "Severity:": "severity"
+    "Last Modified:": "last_modified"
+    "timestamp": "timestamp"
+  values:
+    "severity":
+      "1-Blocking": 1
+      "2-Critical": 2
+      "3-Major": 3
+      "4-Minor": 4
+      "5-Cosmetic": 5

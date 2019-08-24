@@ -9,6 +9,3 @@ class JuniperSpider(scrapy.Spider):
 		"https://kb.juniper.net/InfoCenter/index?page=content&id=JSA10935&actp=METADATA",
 		"http://kb.juniper.net/InfoCenter/index?page=content&id=JSA10684"
 	]
-
-	def parse(self, response):
-		pass

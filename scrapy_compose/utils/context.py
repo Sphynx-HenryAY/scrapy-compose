@@ -5,16 +5,14 @@ def realize( selector, query ):
 
 	sel_list = selector( query[1:] )
 
-	syntax = selector.__name__
-	text_sufx = "::text" if syntax == "css" else "text()"
+	xel_list = sel_list.xpath( "string()" )
+	if xel_list:
+		sel_list = xel_list
 
-	if not query.endswith( text_sufx ):
-		xel_list = sel_list.xpath( "string()" )
-		# if xpath string is applicable, use it
-		if xel_list:
-			sel_list = xel_list
+	if len( sel_list ) < 2:
+		return sel_list.get( "" ).strip()
 
-	return sel_list.get( "" ).strip()
+	return sel_list.extract()
 
 def tablize(
 		table = None,

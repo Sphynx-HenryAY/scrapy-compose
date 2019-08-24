@@ -1,0 +1,31 @@
+syntax: css #or xpath
+
+parsers:
+  parse:
+    timestamp:
+      _type: timestamp
+      format: "%Y-%m-%d"
+    bug_list: "@a::text"
+    _meta:
+      item: "scrapy_compose.items.DynamicItem"
+      requests:
+        "@a::attr(href)": parse_bug_content
+
+  parse_bug_content:
+    id: '@.bread-crumbs span::text'
+    '@h2~p ::text':
+      _type: alternating
+      pre_pack: "scrapy_compose.sanitizers.concreted"
+    timestamp:
+      _type: timestamp
+      format: "%Y-%m-%d"
+    _meta:
+      item: "scrapy_compose.items.DynamicItem"
+
+output:
+  filter: on
+  keys:
+    id: id
+    "Last Modified:": "last_modified"
+    "timestamp": "timestamp"
+    "bug_list": "bug_list"

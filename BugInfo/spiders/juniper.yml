@@ -1,0 +1,11 @@
+
+parsers:
+    parse:
+        "@#kb_attributes>td:nth-child(2) td":
+            _type: alternating
+            packing: "scrapy_compose.sanitizers.strip"
+        "@.contentrecord>strong:not(:contains('Related Links:')), .contentrecord>.nonfileattachment":
+            _type: alternating
+            packing: "scrapy_compose.sanitizers.strip"
+        _meta:
+            item: 'scrapy_compose.items.DynamicItem'

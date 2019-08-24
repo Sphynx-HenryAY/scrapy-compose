@@ -6,3 +6,4 @@ def default( s, by = None ):
 
 by_space = partial( default, by = " " )
 by_linebreak = partial( default, by = "\n" )
+by_comma = partial( default, by = "," )

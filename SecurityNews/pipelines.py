@@ -5,11 +5,6 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
-class SecuritynewsPipeline(object):
-
-	def process_item(self, item, spider):
-		return item
-
 class MongoPipeline(object):
 
 	@classmethod
@@ -17,7 +12,7 @@ class MongoPipeline(object):
 		return cls()
 
 	def open_spider(self, spider):
-		from SecurityNews.db.mongo import MongodbConnection
+		from common.db.mongo import MongodbConnection
 		self.mongo = MongodbConnection(
 			collection = spider.name
 		)

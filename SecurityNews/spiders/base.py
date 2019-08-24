@@ -17,16 +17,19 @@ class TIPSpider( scrapy.Spider ):
 				                            /_/ |_/   \___/ |__/|__/  /____/  
 	"""
 
-	def flag( self ):
-		self.__( self._flag )
+	def showflag( self ):
+		self.log( self._flag )
 
 	def __init__( self, *args, **kwargs ):
 		super().__init__( *args, **kwargs )
 
 		import json
-		self.__ = lambda *args, **kwargs: self.logger.info(
+		self.log = lambda *args, **kwargs: self.logger.info(
 			"|" +
 			", ".join( str( e ) for e in args ) +
 			"|" +
 			( json.dumps( kwargs, indent = 4 ) if kwargs else "" )
 		)
+
+	def parse( self, response ):
+		pass

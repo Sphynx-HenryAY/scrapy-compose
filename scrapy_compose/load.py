@@ -18,15 +18,15 @@ def resource( path ):
 	mod, func = path.rsplit( ".", 1 )
 	return getattr( import_module( mod ), func )
 
-def package( pkg_name, namespace = None, member_filter = None ):
+def package( pkg_name, namespace = None, key = None ):
 
 	from importlib import import_module
 	from inspect import getmembers
 	from os.path import basename, join, dirname as get_dirname
 	import glob
 
-	if member_filter is None:
-		member_filter = lambda x: callable( x ) and not x.__name__.startswith( "__" )
+	if key is None:
+		key = lambda x: callable( x ) and not x.__name__.startswith( "__" )
 
 	if namespace is None:
 		namespace = {}
@@ -45,7 +45,7 @@ def package( pkg_name, namespace = None, member_filter = None ):
 
 		# if imported cls can be registered in Fields
 		#	add it to local namespace
-		for name, cls in getmembers( module, member_filter ):
+		for name, cls in getmembers( module, key ):
 			namespace[ name ] = cls
 
 		namespace.pop( mod_name, None )

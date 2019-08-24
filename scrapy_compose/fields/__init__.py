@@ -1,2 +1,2 @@
 from .compose import ComposeFields
-from .spider import SpiderFields
+from .parser import ParserFields

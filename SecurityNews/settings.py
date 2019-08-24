@@ -23,7 +23,10 @@ ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
-#ITEM_PIPELINES = {'SecurityNews.pipelines.MongoPipeline':300, }
+ITEM_PIPELINES = {
+    'UpdateTracker.pipelines.LastUpdatePipeline':300,
+    'SecurityNews.pipelines.MongoPipeline':300,
+}
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay

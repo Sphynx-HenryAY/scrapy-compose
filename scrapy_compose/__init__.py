@@ -5,54 +5,62 @@ DEFAULT_SYNTAX = "css"
 def compose( func ):
 
 	def func_wrapper( self, response, *args, **kwargs ):
-		fname = func.__name__
+		pname = func.__name__
 
 		if hasattr( self.__class__, "spider-config" ):
 			spider_config = getattr( self.__class__, "spider-config" )
 		else:
 			spider_config = load.config( func.__module__ )
 
-		if spider_config is None or fname not in spider_config:
+		parsers = spider_config.get( "parsers", {} )
+
+		if spider_config is None or pname not in parsers:
 			return func( self, response )
 
-		syntax = spider_config.get( "selector", DEFAULT_SYNTAX )
+		syntax = spider_config.get( "syntax", DEFAULT_SYNTAX )
 
-		cps = fields.compose.SpiderCompose(
-			key = fname,
-			value = spider_config[ fname ],
-			selector = getattr( response, syntax )
+		parser = fields.compose.ParserCompose(
+			key = pname,
+			value = parsers[ pname ],
+			selector = getattr( response, syntax ),
+			spider = self
 		)
 
-		if cps.is_endpoint:
-			return cps.endpoint
+		if parser.has_endpoints:
+			return parser.endpoints
 
-		response.meta[ "compose" ] = cps.context
+		response.meta[ "compose" ] = parser.context
 
 		return func( self, response, *args, **kwargs )
 
 	return func_wrapper
 
-def output( spider_name, spider_item, config = None ):
+def output( spider_item, config ):
 
-	if config is None:
-		config = load.config( spider_name )
+	from collections import defaultdict
 
-	filter_output = config.get( "output_filter", False )
-	exclude = config.get( "output_exclude", [] )
-	fields = config.get( "output", {} )
+	keys = config.get( "keys", {} )
+	if isinstance( keys, list ):
+		keys = { k: k for k in keys }
 
-	for ex in exclude:
-		fields.pop( ex, None )
-		spider_item.pop( ex, None )
+	active_filter = config.get( "filter", False )
+	exclude = set( config.get( "exclude", [] ) )
+	if active_filter:
+		exclude |= spider_item.keys() - keys.keys()
 
-	if filter_output:
-		return {
-			fields[k]: v
-			for k, v in spider_item.items()
-			if k in fields
-		}
-	else:
-		return {
-			fields.get( k, k ): spider_item.get( k, "" )
-			for k in set( fields )|set( spider_item )
-		}
+	context = {}
+	values = config.get( "values", defaultdict( dict ) )
+
+	for k, v in spider_item.items():
+
+		if k in exclude:
+			continue
+
+		final_k = keys.get( k, k )
+		if final_k in values:
+			d_val = values[ final_k ]
+			v = d_val.get( v, d_val.get( "default", None ) )
+
+		context[ final_k ] = v
+
+	return context

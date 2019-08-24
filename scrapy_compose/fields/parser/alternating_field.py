@@ -1,14 +1,13 @@
 
-from .fields import SpiderField as BaseField
+from .field import ParserField as BaseField
 
 class AlternatingField( BaseField ):
 
-	sanitize_timing = ( "pre_pack", "packing", "post_pack" )
+	sanitize_timing = [ "pre_pack", "packing", "post_pack" ]
 
 	@property
 	def context( self ):
 		if not self._context:
-			self._init_sanitizers()
 
 			value = self.value
 			rk, rv = value.get( "key", "" ), value.get( "value", "" )

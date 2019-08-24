@@ -5,9 +5,9 @@ from itertools import zip_longest
 import scrapy
 
 from scrapy_compose.sanitizers import concreted
+from scrapy_compose.items import DynamicItem
 
 from SecurityNews.spiders.base import TIPSpider
-from SecurityNews.items import SecurityNewsItem
 
 class PaloAltoSpider( TIPSpider ):
 	name = "paloalto"
@@ -24,7 +24,7 @@ class PaloAltoSpider( TIPSpider ):
 
 		# header row has been popped
 		for tr in trs[1:]:
-			yield SecurityNewsItem.DynamicItem(
+			yield DynamicItem(
 				**dict( zip(
 					theads,
 					( merge_td( td ) for td in tr.css( "td" ) )
