@@ -3,9 +3,13 @@ from .fields import ComposeField
 
 class SpiderCompose( ComposeField ):
 
-	name = None
+	from .parser import ParserCompose
 
+	name = None
 	support_ext = [ "yml", "yaml", "json" ]
+	fields = {
+		"parsers": ParserCompose
+	}
 
 	@classmethod
 	def from_package( cls, pkg_name, namespace = None ):
@@ -44,34 +48,51 @@ class SpiderCompose( ComposeField ):
 		return namespace
 
 	def __init__( self, key = None, value = None, **kwargs ):
+		super().__init__( key = key, value = value, **kwargs )
+		value = self.value
 
 		from scrapy import Spider
 		class spidercls( Spider ):
 
 			from collections import defaultdict
-			from scrapy_compose.compose_settings import DEFAULT_SYNTAX
 			from scrapy_compose.utils import genuid
-			from .parser import ParserCompose
 
 			name = key if key is not None else genuid()
-			compose = defaultdict( dict )
+			compose = self.compose
+			composed = defaultdict( dict )
 
-			for p_name, p_config in value.pop( "parsers", {} ).items():
-				parser = ParserCompose(
-					key = p_name,
-					value = p_config,
-					syntax = value.get( "syntax", DEFAULT_SYNTAX ),
-				)
-				vars()[ p_name ]  = parser
-				compose[ "parser" ][ p_name ] = parser
+			for k in set( self.fields ) & set( value ):
+				for f_name, field in compose( k ).items():
+					vars()[ f_name ] = field
+					composed[ k ][ f_name ] = field
 
 			for attr in set( value ):
 				vars()[ attr ] = value[ attr ]
 
-			def __init__( self, *args, **kwargs ):
+			def __init__( spider, *args, **kwargs ):
 				super().__init__( *args, **kwargs )
-				self.compose[ "spider" ] = self
-				for parser in self.compose[ "parser" ].values():
-					parser.spider = self
+				spider.composed[ "spider" ] = spider
+				for parser in spider.composed[ "parsers" ].values():
+					parser.spider = spider
 
 		self.composed = spidercls
+
+	def compose( self, compose_key, namespace = None ):
+
+		if namespace is None:
+			namespace = {}
+
+		from scrapy_compose.compose_settings import DEFAULT_SYNTAX
+
+		composed = self.composed
+		Field = self.fields[ compose_key ]
+		value = self.value
+
+		for f_name, f_config in value.pop( compose_key, {} ).items():
+			namespace[ f_name ] = Field(
+				key = f_name,
+				value = f_config,
+				syntax = value.get( "syntax", DEFAULT_SYNTAX )
+			)
+
+		return namespace
