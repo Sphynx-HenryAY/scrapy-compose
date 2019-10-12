@@ -134,7 +134,7 @@ class EntryPoint:
 		self.print_header()
 		print(
 			f"Unknown command: {self.action}\n"
-			'Use "scrapy" to see available commands'
+			'Use "scrapy-compose" to see available commands'
 		)
 
 	def __call__( self ):
