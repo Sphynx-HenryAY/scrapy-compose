@@ -7,6 +7,7 @@ class ParserCompose( ParserField, ComposeField ):
 	def __init__( self, spider = None, **kwargs ):
 		super().__init__( **kwargs )
 		self.spider = spider
+		self.composed = self.get_endpoints
 
 	def get_context( self, response ):
 
@@ -22,7 +23,7 @@ class ParserCompose( ParserField, ComposeField ):
 	def has_endpoints( self ):
 		return bool( self.meta )
 
-	def get_composed( self, response ):
+	def get_endpoints( self, response ):
 
 		if not self.has_endpoints:
 			return None
@@ -75,6 +76,3 @@ class ParserCompose( ParserField, ComposeField ):
 
 				for url in urls:
 					yield Request( url, callback = f_callback )
-
-	def __call__( self, response ):
-		return self.get_composed( response )
