@@ -1,9 +1,7 @@
 
-from scrapy import Spider as BaseSpider
-
 from .fields import ComposeField
 
-class SpiderCompose( BaseSpider, ComposeField ):
+class SpiderCompose( ComposeField ):
 
 	name = None
 
@@ -35,16 +33,20 @@ class SpiderCompose( BaseSpider, ComposeField ):
 					continue
 
 				except ModuleNotFoundError:
-					namespace[ f_name ] = cls.spidercls(
-						key = f_name,
-						value = yaml.safe_load( open( f ) )
+					namespace[ f_name ] = (
+						cls(
+							key = f_name,
+							value = yaml.safe_load( open( f ) )
+						)
+						.composed
 					)
 
 		return namespace
 
-	@classmethod
-	def spidercls( cls, key = None, value = None, **kwargs ):
-		class s_cls( cls ):
+	def __init__( self, key = None, value = None, **kwargs ):
+
+		from scrapy import Spider
+		class spidercls( Spider ):
 
 			from collections import defaultdict
 			from scrapy_compose.compose_settings import DEFAULT_SYNTAX
@@ -71,4 +73,4 @@ class SpiderCompose( BaseSpider, ComposeField ):
 				for parser in self.compose[ "parser" ].values():
 					parser.spider = self
 
-		return s_cls
+		self.composed = spidercls
