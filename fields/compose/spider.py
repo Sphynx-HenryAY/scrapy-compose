@@ -50,9 +50,10 @@ class SpiderCompose( ComposeField ):
 
 			from collections import defaultdict
 			from scrapy_compose.compose_settings import DEFAULT_SYNTAX
+			from scrapy_compose.utils import genuid
 			from .parser import ParserCompose
 
-			name = key
+			name = key if key is not None else genuid()
 			compose = defaultdict( dict )
 
 			for p_name, p_config in value.pop( "parsers", {} ).items():
