@@ -62,16 +62,27 @@ def spiders( module, namespace = None, naming = None ):
 
 	from inspect import isclass
 	from scrapy import Spider
+
 	from scrapy_compose.utils.load import package as load_package
+	from scrapy_compose.fields.compose.spider import SpiderCompose
 
 	spiders = load_package( module, key = lambda s: (
 		isclass( s ) and
 		issubclass( s, Spider ) and
 		getattr( s, "name", None )
 	) )
+	SpiderCompose.from_package( module, spiders )
 
 	for s_name, spider in spiders.items():
 		spider.name = naming.format( **locals() )
 		namespace[ s_name ] = spider
 
 	return namespace
+
+def settings( path ):
+	module = resource( path )
+	return {
+		k: getattr( module, k )
+		for k in dir( module )
+		if k.isupper()
+	}

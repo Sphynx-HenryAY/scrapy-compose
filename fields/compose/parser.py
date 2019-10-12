@@ -24,13 +24,16 @@ class ParserCompose( ParserField, ComposeField ):
 		return (
 			"item" in self.meta or
 			"items" in self.meta or
-			"requests" in self.meta
+			"requests" in self.meta or
+			"follows" in self.meta
 		)
 
 	def get_endpoints( self, response ):
 
 		if not self.has_endpoints:
 			return None
+
+		from scrapy import Request
 
 		selector = self.get_selector( response )
 
@@ -49,16 +52,35 @@ class ParserCompose( ParserField, ComposeField ):
 						yield next( f_callback( block ) )
 
 		if "requests" in meta:
-			from scrapy import Request
-
-			for urls, callback in meta[ "requests" ].items():
+			for url_str, callback in meta[ "requests" ].items():
 				f_callback = getattr( spider, callback )
 
-				if urls.startswith( "@" ):
+				if url_str.startswith( "@" ):
 					# realize will return string data directly if len( selected ) is 1
-					urls = selector( urls[1:] ).extract()
+					urls = selector( url_str[1:] ).extract()
 				else:
-					urls = [ urls ]
+					urls = [ url_str ]
 
 				for url in urls:
 					yield Request( url, callback = f_callback )
+
+
+		if "follows" in meta:
+			from scrapy.utils.response import get_base_url
+			from urllib.parse import urljoin
+
+			base_url = get_base_url( response )
+			for url_str, callback in meta[ "follows" ].items():
+				f_callback = getattr( spider, callback )
+
+				if url_str.startswith( "@" ):
+					# realize will return string data directly if len( selected ) is 1
+					urls = [ urljoin( base_url, url ) for url in selector( url_str[1:] ).extract() ]
+				else:
+					urls = [ urljoin( base_url, url_str ) ]
+
+				for url in urls:
+					yield Request( url, callback = f_callback )
+
+	def __call__( self, response ):
+		return self.get_endpoints( response )

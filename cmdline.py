@@ -91,10 +91,16 @@ class EntryPoint:
 	def __init__( self, argv = None, settings = None ):
 
 		from scrapy.utils.project import inside_project, get_project_settings
+		from .utils.load import settings as load_settings
 
 		self.argv = ( sys.argv if argv is None else argv )[1:]
-		self.settings = get_project_settings() if settings is None else settings
 		self.inproject = inside_project()
+
+		self.settings = get_project_settings() if settings is None else settings
+		self.settings.setdict(
+			load_settings( "scrapy_compose.compose_settings" )
+			, priority = "default"
+		)
 
 	def print_header( self ):
 		import scrapy

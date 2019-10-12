@@ -1,6 +1,4 @@
-from . import fields, utils, processors
-
-DEFAULT_SYNTAX = "css"
+from . import fields, utils, processors, compose_settings
 
 def compose( func ):
 
@@ -17,17 +15,17 @@ def compose( func ):
 		if spider_config is None or pname not in parsers:
 			return func( self, response )
 
-		syntax = spider_config.get( "syntax", DEFAULT_SYNTAX )
+		syntax = spider_config.get( "syntax", compose_settings.DEFAULT_SYNTAX )
 
 		parser = fields.compose.ParserCompose(
 			key = pname,
 			value = parsers[ pname ],
 			syntax = syntax,
-			spider = self
 		)
 
 		if parser.has_endpoints:
-			return parser.get_endpoints( response )
+			parser.spider = self
+			return parser( response )
 
 		response.meta[ "compose" ] = parser.get_context( response )
 
