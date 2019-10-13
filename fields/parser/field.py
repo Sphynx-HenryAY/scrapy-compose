@@ -4,12 +4,16 @@ from abc import ABC as AbstractClass, abstractproperty, abstractmethod
 from ..base.field import Field
 
 class ParserField( Field ):
+
+	from scrapy.utils.project import get_project_settings
 	
+	accept_syntax = [ "css", "xpath" ]
+	suff_len = 5
+
+	syntax = get_project_settings().get( "DEFAULT_SYNTAX", "css" )
 	process_timing = []
 
-	syntax = "css"
-
-	accept_syntax = [ "css", "xpath" ]
+	_context = None
 
 	def __init__( self, syntax = None, **kwargs ):
 		super().__init__( **kwargs )

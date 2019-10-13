@@ -2,10 +2,14 @@ from ..base import Fields
 
 class ComposeField( Fields.Field ):
 
-	composed = None
+	from scrapy_compose.utils import classproperty
 
-	def __call__( self, *args, **kwargs ):
-		return self.composed( *args, **kwargs )
+	suff_len = 7
+	plural = "s"
+
+	@classproperty
+	def fkey( cls ):
+		return f"{cls.__name__[:-cls.suff_len].lower()}{cls.plural}"
 
 class ComposeTypes( Fields.Types ): pass
 

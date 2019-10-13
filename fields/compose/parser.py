@@ -2,7 +2,7 @@
 from .fields import ComposeField
 from ..parser.fields import ParserFields, ParserField
 
-class ParserCompose( ParserField, ComposeField ):
+class ParserCompose( ComposeField, ParserField ):
 
 	def __init__( self, spider = None, **kwargs ):
 		super().__init__( **kwargs )
