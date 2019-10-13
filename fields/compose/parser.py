@@ -4,20 +4,28 @@ from ..parser.fields import ParserFields, ParserField
 
 class ParserCompose( ComposeField, ParserField ):
 
+	_fields = None
+
 	def __init__( self, spider = None, **kwargs ):
 		super().__init__( **kwargs )
 		self.spider = spider
 		self.composed = self.get_endpoints
 
 	def get_context( self, response ):
-
 		ctx = {}
-		for k, v in self.value.items():
-			ctx.update( ParserFields.from_config( key = k, value = v )
-				.get_context( response )
-			)
-
+		for field in self.fields:
+			ctx.update( field.get_context( response ) )
 		return ctx
+
+	@property
+	def fields( self ):
+		if not self._fields:
+			fields = []
+			for k, v in self.value.items():
+				fkey = v[ "_type" ] if isinstance( v, dict ) else "string"
+				fields.append( ParserFields.fields[ fkey ]( key = k, value = v ) )
+			self._fields = fields
+		return self._fields
 
 	@property
 	def has_endpoints( self ):

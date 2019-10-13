@@ -54,9 +54,6 @@ class FuncField( ParserField ):
 		# self would not be passed to func call
 		self.func = self.__class__.func
 
-	def __call__( self, *args, **kwargs ):
-		return self.func( *args, **kwargs )
-
 	def get_context( self, response ):
 		return self.make_field(
 			self.get_selector( response ),
