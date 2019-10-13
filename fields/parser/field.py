@@ -1,7 +1,7 @@
 
 from abc import ABC as AbstractClass, abstractproperty, abstractmethod
 
-from ..base.field import Field
+from ..base.fields import Field
 
 class ParserField( Field ):
 
@@ -26,6 +26,8 @@ class ParserField( Field ):
 
 		if self.process_timing:
 			self._init_processors()
+
+		self.composed = self.get_context
 
 	def _init_processors( self ):
 

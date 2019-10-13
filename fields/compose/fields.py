@@ -11,8 +11,5 @@ class ComposeField( Fields.Field ):
 	def fkey( cls ):
 		return f"{cls.__name__[:-cls.suff_len].lower()}{cls.plural}"
 
-class ComposeTypes( Fields.Types ): pass
-
 class ComposeFields( Fields ):
 	Field = ComposeField
-	Types = ComposeTypes

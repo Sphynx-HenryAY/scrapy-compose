@@ -1,66 +1,59 @@
 
-class Types:
+from abc import ABC as AbstractClass, abstractmethod
 
-	@classmethod
-	def by_key( cls, key ):
-		return getattr( cls, key.capitalize(), None )()
+class Field( AbstractClass ):
 
-	@classmethod
-	def by_value( cls, value ):
-		field_type = (
-			"string"
-			if isinstance( value, str ) else
-			value[ "_type" ]
-		)
-		return cls.by_key( field_type )
+	from scrapy_compose.utils import classproperty
 
-	@classmethod
-	def register( cls, field ):
+	sufx_len = 0
+	composed = None
 
-		key = field.__name__[:-5].lower()
-		type_name = key.capitalize()
+	key = None
+	value = None
 
-		if hasattr( cls, type_name ):
-			return getattr( cls, type_name )
+	def __init__( self, key = None, value = None, **kwargs ):
+		from copy import deepcopy
 
-		from collections import namedtuple
+		if key is not None:
+			self.key = key
 
-		_type = namedtuple( type_name, "field key", defaults = ( field, key ) )
-		setattr( cls, type_name, _type )
+		if value is not None:
+			self.value = value
 
-		return _type
+		value = deepcopy( self.value )
+
+		self.meta = value.pop( "_meta", {} )
+		self.value = value
+
+	@classproperty
+	def fkey( cls ):
+		return cls.__name__[:-cls.suff_len].lower()
+
+	def __call__( self, *args, **kwargs ):
+		return self.composed( *args, **kwargs )
 
 class Fields:
 
-	from .field import Field
+	from scrapy_compose.utils import classproperty
+
+	_fields = None
 	Field = Field
-	Types = Types
+
+	@classproperty
+	def fields( cls ):
+		if cls._fields is None:
+			cls._fields = {}
+		return cls._fields
 
 	@classmethod
 	def register( cls, field ):
-		if cls.registrable( field ):
-			setattr( cls, field.__name__, field )
-			cls.Types.register( field )
-			return field
-
-	@classmethod
-	def registrable( cls, field ):
 		from inspect import isclass
 		base_field = cls.Field
-		return isclass( field ) and field is not base_field and issubclass( field, base_field )
-
-	@classmethod
-	def by_key( cls, parse_type ):
-		return cls.Types.by_key( parse_type ).field
-
-	@classmethod
-	def by_value( cls, value ):
-		return cls.Types.by_value( value ).field
-
-	@classmethod
-	def from_config( cls, config = None, **kwargs ):
-
-		if config is None: config = {}
-		config.update( kwargs )
-
-		return cls.Types.by_value( config[ "value" ] ).field( **config )
+		if (
+				isclass( field ) and
+				issubclass( field, base_field ) and
+				field is not base_field
+			):
+			setattr( cls, field.__name__, field )
+			cls.fields[ field.fkey ] = field
+			return field
