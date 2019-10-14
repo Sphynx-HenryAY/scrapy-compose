@@ -127,13 +127,13 @@ class EntryPoint:
 			f"Commands:"
 		)
 		for c_name, cmd in sorted( self.commands.items(), key = lambda x: not x[1].requires_project ): print(
-			f"  {c_name:<13s} {avl[inproject or cmd.requires_project]} {cmd.short_desc()}"
+			f"  {c_name:<13s} {avl[inproject or not cmd.requires_project]} {cmd.short_desc()}"
 		)
 
 	def print_unknown_command( self ):
 		self.print_header()
 		print(
-			f"Unknown command: {self.action}\n"
+			f"Unknown or unavailable command: {self.action}\n"
 			'Use "scrapy-compose" to see available commands'
 		)
 
@@ -145,7 +145,10 @@ class EntryPoint:
 			self.print_commands()
 			sys.exit(0)
 
-		elif action not in self.commands:
+		elif (
+				action not in self.commands or
+				not self.inproject and self.cmd.requires_project
+			):
 			self.print_unknown_command()
 			sys.exit(2)
 
