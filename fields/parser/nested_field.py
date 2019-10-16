@@ -10,7 +10,10 @@ class NestedField( BaseField ):
 		value = self.value
 		rvalue = value[ "value" ]
 
-		field = ParserFields.from_config( **value )
+		field = ParserFields.from_config( rvalue )(
+			key = value[ "key" ],
+			value = rvalue
+		)
 
 		context = {}
 		for row in self.get_selector( response )( self.key[1:] ):

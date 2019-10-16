@@ -3,13 +3,7 @@ from .fields import ComposeField
 
 class SpiderCompose( ComposeField ):
 
-	from .parser import ParserCompose
-
-	name = None
 	support_ext = [ "yml", "yaml", "json" ]
-	fields = {
-		"parsers": ParserCompose
-	}
 
 	@classmethod
 	def from_package( cls, pkg_name, namespace = None ):
@@ -49,50 +43,44 @@ class SpiderCompose( ComposeField ):
 
 	def __init__( self, key = None, value = None, **kwargs ):
 		super().__init__( key = key, value = value, **kwargs )
-		value = self.value
+		self.composed = self._Compose(
+			s_name = self.key,
+			s_config = self.value,
+		)
 
-		from scrapy import Spider
-		class spidercls( Spider ):
+	@staticmethod
+	def _Compose( s_name = None, s_config = None, base_spidercls = None ):
 
-			from collections import defaultdict
+		if s_name is None:
 			from scrapy_compose.utils import genuid
+			s_name = genuid()
 
-			name = key if key is not None else genuid()
-			compose = self.compose
-			composed = defaultdict( dict )
+		if s_config is None:
+			s_config = {}
 
-			for k in set( self.fields ) & set( value ):
-				for f_name, field in compose( k ).items():
-					vars()[ f_name ] = field
-					composed[ k ][ f_name ] = field
+		if base_spidercls is None:
+			from scrapy import Spider as base_spidercls
 
-			for attr in set( value ):
-				vars()[ attr ] = value[ attr ]
+		class spidercls( base_spidercls ):
+
+			from .fields import ComposeFields
+
+			name = s_name
+
+			for k, v in s_config.items():
+
+				if k in ComposeFields.fields:
+					Compose = ComposeFields.fields[ k ]
+					for c_name, c_config in v.items():
+						v[ c_name ] = Compose( key = c_name, value = c_config )
+
+				vars()[ k ] = v
 
 			def __init__( spider, *args, **kwargs ):
-				super().__init__( *args, **kwargs )
-				spider.composed[ "spider" ] = spider
-				for parser in spider.composed[ "parsers" ].values():
+				from scrapy_compose.fields.compose import ParserCompose
+
+				for p_name, parser in getattr( spider, ParserCompose.fkey ).items():
 					parser.spider = spider
+					setattr( spider, p_name, parser )
 
-		self.composed = spidercls
-
-	def compose( self, compose_key, namespace = None ):
-
-		if namespace is None:
-			namespace = {}
-
-		from scrapy_compose.compose_settings import DEFAULT_SYNTAX
-
-		composed = self.composed
-		Field = self.fields[ compose_key ]
-		value = self.value
-
-		for f_name, f_config in value.pop( compose_key, {} ).items():
-			namespace[ f_name ] = Field(
-				key = f_name,
-				value = f_config,
-				syntax = value.get( "syntax", DEFAULT_SYNTAX )
-			)
-
-		return namespace
+		return spidercls

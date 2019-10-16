@@ -5,12 +5,9 @@ from ..base.fields import Field
 
 class ParserField( Field ):
 
-	from scrapy.utils.project import get_project_settings
-	
 	accept_syntax = [ "css", "xpath" ]
 	suff_len = 5
 
-	syntax = get_project_settings().get( "DEFAULT_SYNTAX", "css" )
 	process_timing = []
 
 	_context = None
@@ -19,10 +16,15 @@ class ParserField( Field ):
 		super().__init__( **kwargs )
 
 		if syntax is not None:
-			if syntax in self.accept_syntax:
-				self.syntax = syntax
-			else:
-				raise TypeError( f"{syntax} is not accepted." )
+			self.syntax = syntax
+		elif "syntax" in self.meta:
+			self.syntax = self.meta[ "syntax" ]
+		else:
+			from scrapy_compose.compose_settings import DEFAULT_SYNTAX
+			self.syntax = DEFAULT_SYNTAX
+
+		if self.syntax not in self.accept_syntax:
+			raise TypeError( f"{syntax} is not accepted." )
 
 		if self.process_timing:
 			self._init_processors()
