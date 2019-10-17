@@ -4,3 +4,7 @@ pyc*
 pyo*
 pyd*
 *.swp
+
+build
+dist
+*.egg-info
