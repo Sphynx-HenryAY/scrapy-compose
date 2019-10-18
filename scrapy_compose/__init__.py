@@ -1,5 +1,7 @@
 from . import fields, utils, processors, compose_settings
 
+__version__ = '0.8.3dev'
+
 def compose( func ):
 
 	def func_wrapper( self, response, *args, **kwargs ):
