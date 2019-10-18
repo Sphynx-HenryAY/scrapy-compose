@@ -1,8 +1,8 @@
 __pycache__
 
-pyc*
-pyo*
-pyd*
+*.pyc
+*.pyo
+*.pyd
 *.swp
 
 build
