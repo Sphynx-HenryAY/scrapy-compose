@@ -9,7 +9,7 @@ class ComposeField( Fields.Field ):
 
 	@classproperty
 	def fkey( cls ):
-		return f"{cls.__name__[:-cls.suff_len].lower()}{cls.plural}"
+		return cls.__name__[:-cls.suff_len].lower() + cls.plural
 
 class ComposeFields( Fields ):
 	Field = ComposeField

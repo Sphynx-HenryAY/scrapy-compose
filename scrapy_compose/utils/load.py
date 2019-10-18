@@ -1,5 +1,8 @@
 
-from functools import lru_cache
+try:
+	from functools import lru_cache
+except ImportError:
+	from backports.functools_lru_cache import lru_cache
 
 @lru_cache( maxsize = 64 )
 def config( spider_name ):
@@ -7,7 +10,7 @@ def config( spider_name ):
 	import yaml
 
 	try:
-		with open( f"{spider_name.replace('.','/')}.yml", "r" ) as config_f:
+		with open( spider_name.replace('.','/') + ".yml", "r" ) as config_f:
 			return yaml.safe_load( config_f )
 	except FileNotFoundError:
 		return None
@@ -41,7 +44,7 @@ def package( pkg_name, namespace = None, key = None ):
 			continue
 
 		mod_name = basename( mod_file_name )[:-3]
-		module = import_module( f".{mod_name}", pkg_name )
+		module = import_module( "." + mod_name, pkg_name )
 
 		# if imported cls can be registered in Fields
 		#	add it to local namespace
@@ -58,7 +61,7 @@ def spiders( module, namespace = None, naming = None ):
 		namespace = {}
 
 	if naming is None:
-		naming = f"{module.split('.',1)[0]}.{{spider.name}}"
+		naming = module.split('.',1)[0] + "." + "{spider.name}"
 
 	from inspect import isclass
 	from scrapy import Spider

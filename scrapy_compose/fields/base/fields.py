@@ -1,5 +1,9 @@
 
-from abc import ABC as AbstractClass, abstractmethod
+try:
+	from abc import ABC as AbstractClass, abstractmethod
+except ImportError:
+	from abc import ABCMeta, abstractmethod
+	AbstractClass = ABCMeta( "AbstractClass", (), {} )
 
 class Field( AbstractClass ):
 

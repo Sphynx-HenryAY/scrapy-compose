@@ -34,11 +34,12 @@ class Processor:
 
 class ProcessorCompose( Compose ):
 
-	def __init__( self, *functions, configs = None, **default_loader_context ):
+	def __init__( self, configs = None, *functions, **default_loader_context ):
 
 		if isinstance( configs, list ):
 			s_procs = [ Processor( config ) for config in configs ]
 		else:
 			s_procs = [ Processor( configs ) ]
 
-		super().__init__( *[ *functions, *s_procs ], **default_loader_context )
+		functions = list( functions ) + s_procs
+		super( ProcessorCompose, self ).__init__( *functions, **default_loader_context )

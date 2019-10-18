@@ -27,7 +27,7 @@ class SpiderCompose( ComposeField ):
 			if f_ext in support_ext and f_name not in namespace:
 
 				try:
-					import_module( f"{pkg_name}.{f_name}" )
+					import_module( pkg_name + "." + f_name )
 					continue
 
 				except ModuleNotFoundError:
@@ -42,7 +42,7 @@ class SpiderCompose( ComposeField ):
 		return namespace
 
 	def __init__( self, key = None, value = None, **kwargs ):
-		super().__init__( key = key, value = value, **kwargs )
+		super( SpiderCompose, self ).__init__( key = key, value = value, **kwargs )
 		self.composed = self._Compose(
 			s_name = self.key,
 			s_config = self.value,

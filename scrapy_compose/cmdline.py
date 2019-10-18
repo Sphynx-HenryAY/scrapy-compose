@@ -1,4 +1,3 @@
-
 import sys
 import optparse
 
@@ -45,10 +44,12 @@ class EntryPoint:
 			from scrapy_compose.utils.load import package as load_package
 			cmds = {}
 			iscommand = self.iscommand
+			inproject = self.inproject
 			load_package(
 				"scrapy_compose.commands",
 				key = lambda c: (
 					iscommand( c ) and
+					( inproject or not c.requires_project ) and
 					cmds.update(
 						{ c.__module__.split(".")[-1]: c() }
 					)
@@ -78,7 +79,7 @@ class EntryPoint:
 			settings.setdict( cmd.default_settings, priority = "command" )
 
 			parser = self.parser
-			parser.usage = f"{self.name} {self.action} {cmd.syntax()}"
+			parser.usage = " ".join([ self.name, self.action, cmd.syntax() ])
 			parser.description = cmd.long_desc()
 
 			cmd.settings = settings
@@ -104,38 +105,33 @@ class EntryPoint:
 
 	def print_header( self ):
 		import scrapy
+		p_str = "Scrapy " + scrapy.__version__ + " - "
 		if self.inproject:
-			print( f"Scrapy {scrapy.__version__} - project: {self.settings['BOT_NAME']}" )
+			p_str += "project : " + self.settings['BOT_NAME']
 		else:
-			print( f"Scrapy {scrapy.__version__} - no active project" )
-		print()
+			p_str += "no active project"
+		print( "" )
 
 	def print_commands( self ):
 		self.print_header()
 
-		avl = [
-			"\u2718", # cross
-			"\u2713", # tick
-		]
+		print("Usage:")
+		print("  " + self.name + " <command> [options] [args]\n")
+		print("Available commands:")
+		for c_name, cmd in sorted( self.commands.items() ):
+			print( "  %-13s %s" % ( c_name, cmd.short_desc() ) )
 
-		inproject = self.inproject
+		if not self.inproject:
+			print( "" )
+			print( "  [ more ]      More commands available when run from project directory" )
 
-		print(
-			f"Usage:\n"
-			f"  {self.name} <command> [options] [args]\n"
-			f"\n"
-			f"Commands:"
-		)
-		for c_name, cmd in sorted( self.commands.items(), key = lambda x: not x[1].requires_project ): print(
-			f"  {c_name:<13s} {avl[inproject or not cmd.requires_project]} {cmd.short_desc()}"
-		)
+		print( "" )
+		print( 'Use "scrapy <command> -h" to see more info about a command' )
 
 	def print_unknown_command( self ):
 		self.print_header()
-		print(
-			f"Unknown or unavailable command: {self.action}\n"
-			'Use "scrapy-compose" to see available commands'
-		)
+		print( "Unknown or unavailable command: {self.action}" )
+		print( 'Use "scrapy-compose" to see available commands' )
 
 	def __call__( self ):
 

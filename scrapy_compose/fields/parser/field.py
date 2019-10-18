@@ -1,5 +1,9 @@
 
-from abc import ABC as AbstractClass, abstractproperty, abstractmethod
+try:
+	from abc import ABC as AbstractClass, abstractproperty, abstractmethod
+except ImportError:
+	from abc import ABCMeta, abstractproperty, abstractmethod
+	AbstractClass = ABCMeta( "AbstractClass", (), {} )
 
 from ..base.fields import Field
 
@@ -13,7 +17,7 @@ class ParserField( Field ):
 	_context = None
 
 	def __init__( self, syntax = None, **kwargs ):
-		super().__init__( **kwargs )
+		super( ParserField, self ).__init__( **kwargs )
 
 		if syntax is not None:
 			self.syntax = syntax
@@ -24,7 +28,7 @@ class ParserField( Field ):
 			self.syntax = DEFAULT_SYNTAX
 
 		if self.syntax not in self.accept_syntax:
-			raise TypeError( f"{syntax} is not accepted." )
+			raise TypeError( syntax + " is not accepted." )
 
 		if self.process_timing:
 			self._init_processors()
@@ -48,13 +52,8 @@ class ParserField( Field ):
 
 class FuncField( ParserField ):
 
-	func = None
-
 	def __init__( self, **kwargs ):
-		super().__init__( **kwargs )
-
-		# self would not be passed to func call
-		self.func = self.__class__.func
+		super( FuncField, self ).__init__( **kwargs )
 
 	def get_context( self, response ):
 		return self.make_field(

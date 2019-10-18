@@ -7,7 +7,7 @@ class ParserCompose( ComposeField, ParserField ):
 	_fields = None
 
 	def __init__( self, spider = None, syntax = None, **kwargs ):
-		super().__init__( **kwargs )
+		super( ParserCompose, self ).__init__( **kwargs )
 
 		from scrapy.utils.project import get_project_settings
 
@@ -42,7 +42,8 @@ class ParserCompose( ComposeField, ParserField ):
 	def get_endpoints( self, response ):
 
 		if not self.has_endpoints:
-			return None
+			yield None
+			return
 
 		from scrapy import Request
 
