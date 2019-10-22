@@ -1,6 +1,6 @@
 from . import fields, utils, processors, compose_settings
 
-__version__ = '0.8.3dev'
+__version__ = '0.8.4'
 
 def compose( func ):
 
