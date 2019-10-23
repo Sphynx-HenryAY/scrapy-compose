@@ -12,21 +12,27 @@ def compose( func ):
 		else:
 			spider_config = utils.load.config( func.__module__ )
 
-		parsers = spider_config.get( "parsers", {} )
+		if spider_config is None:
+			return func( self, response )
 
-		if spider_config is None or pname not in parsers:
+		p_config = ( spider_config
+			.get( "parsers", {} )
+			.get( pname, {} )
+		)
+
+		if not p_config:
 			return func( self, response )
 
 		syntax = spider_config.get( "syntax", compose_settings.DEFAULT_SYNTAX )
 
 		parser = fields.compose.ParserCompose(
 			key = pname,
-			value = parsers[ pname ],
+			value = p_config,
 			syntax = syntax,
+			spider = self,
 		)
 
 		if parser.has_endpoints:
-			parser.spider = self
 			return parser( response )
 
 		response.meta[ "compose" ] = parser.get_context( response )

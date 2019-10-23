@@ -10,6 +10,38 @@ class ScrapyComposeMiddleware(object):
 	@classmethod
 	def from_crawler(cls, crawler):
 		# This method is used by Scrapy to create your spiders.
+		spidercls = crawler.spidercls
+
+		if not hasattr( spidercls, "spider-config" ):
+			from scrapy import Spider as BaseSpider
+
+			from scrapy_compose import compose
+			from scrapy_compose.fields.compose.parser import ParserCompose
+			from scrapy_compose.utils.load import config as load_config
+
+			config = load_config( spidercls.__module__ ) or {}
+			parsers = config.get( ParserCompose.fkey, {} )
+
+			base_parse = BaseSpider.parse
+
+			for pname, p_config in parsers.items():
+				parser = getattr( spidercls, pname, None )
+
+				if parser and parser is not base_parse:
+					parser = compose( parser )
+
+				else:
+					parser = ParserCompose(
+						key = pname,
+						value = p_config,
+					)
+					parsers[ pname ] = parser
+
+				setattr( spidercls, pname, parser )
+
+			setattr( spidercls, ParserCompose.fkey, parsers )
+			setattr( spidercls, "spider-config", config )
+
 		s = cls()
 		crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
 		return s
@@ -40,8 +72,6 @@ class ScrapyComposeMiddleware(object):
 				yield i
 			return
 
-		spider_name = spider.__module__
-
 		for i in result:
 			if isinstance( i, Item ):
 				yield DynamicItem(
@@ -68,28 +98,9 @@ class ScrapyComposeMiddleware(object):
 			yield r
 
 	def spider_opened(self, spider):
-		if not hasattr( spider.__class__, "spider-config" ):
-			from scrapy_compose import compose
-			from scrapy_compose.utils.load import config as load_config
-
-			spider_name = spider.__module__
-
-			config = load_config( spider_name ) or {}
-			parsers = config.get( "parsers", {} )
-
-			if parsers:
-
-				for pname in parsers:
-					p_func = getattr( spider.__class__, pname, None )
-
-					if not p_func:
-						def p_func( self, response ): pass
-						p_func.__name__ = pname
-
-					setattr( spider.__class__, pname, compose( p_func ) )
-
-			setattr( spider.__class__, "spider-config", config )
-			spider.logger.info( '%s with spider-compose initialized' % spider.name )
-
 		spider.logger.info('Spider opened: %s' % spider.name)
 
+		from scrapy_compose.fields.compose.parser import ParserCompose
+		for p_name, parser in getattr( spider, ParserCompose.fkey ).items():
+			if isinstance( parser, ParserCompose ):
+				parser.spider = spider
