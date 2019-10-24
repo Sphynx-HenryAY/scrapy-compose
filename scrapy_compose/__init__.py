@@ -7,8 +7,10 @@ def compose( func ):
 	def func_wrapper( self, response, *args, **kwargs ):
 		pname = func.__name__
 
-		if hasattr( self.__class__, "spider-config" ):
-			spider_config = getattr( self.__class__, "spider-config" )
+		if hasattr( self.__class__, "config" ):
+			spider_config = getattr( self.__class__, "config" )
+		elif hasattr( self.__class__, "parent" ):
+			spider_config = utils.load.config( self.__class__.parent.__module__ )
 		else:
 			spider_config = utils.load.config( func.__module__ )
 
