@@ -84,8 +84,6 @@ class SpiderCompose( ComposeField ):
 			name = s_name
 			config = s_config
 
-			parent = base_spidercls
-
 			parsers = {}
 
 			# name can be overwritten by config

@@ -11,8 +11,6 @@ def compose( func ):
 
 		if hasattr( self.__class__, "config" ):
 			spider_config = getattr( self.__class__, "config" )
-		elif hasattr( self.__class__, "parent" ):
-			spider_config = load_config( self.__class__.parent.__module__ )
 		else:
 			spider_config = load_config( func.__module__ )
 
