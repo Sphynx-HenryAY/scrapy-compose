@@ -60,6 +60,10 @@ class SpiderCompose( ComposeField ):
 			base_spidercls = BaseSpider
 
 		if s_config is None:
+			s_config = {}
+
+		s_config.update( getattr( base_spidercls, "config", {} ) )
+		if not s_config:
 			return base_spidercls
 
 		if s_name is None:
