@@ -90,7 +90,9 @@ def spiders( module, namespace = None, naming = None ):
 	return namespace
 
 def settings( path ):
-	module = resource( path )
+	from importlib import import_module
+	module = import_module( path )
+
 	return {
 		k: getattr( module, k )
 		for k in dir( module )

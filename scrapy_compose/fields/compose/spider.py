@@ -70,7 +70,7 @@ class SpiderCompose( ComposeField ):
 			from scrapy_compose.utils import genuid
 			s_name = genuid()
 
-		from scrapy_compose import compose
+		from scrapy_compose.decorators import compose
 		from scrapy_compose.compose_settings import DEFAULT_SYNTAX
 		from scrapy_compose.fields import ComposeFields
 

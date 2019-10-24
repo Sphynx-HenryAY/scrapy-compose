@@ -29,7 +29,7 @@ class ScrapyComposeMiddleware(object):
 
 		from scrapy import Item
 
-		from scrapy_compose import output
+		from scrapy_compose.decorators import output
 		from scrapy_compose.utils.load import config as load_config
 		from scrapy_compose.items import DynamicItem
 
