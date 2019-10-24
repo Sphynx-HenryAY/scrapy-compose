@@ -5,15 +5,18 @@ except ImportError:
 	from backports.functools_lru_cache import lru_cache
 
 @lru_cache( maxsize = 64 )
-def config( spider_name ):
+def config( spider ):
+
+	if hasattr( spider.__class__, "config" ):
+		return spider.__class__.config
 
 	import yaml
 
 	try:
-		with open( spider_name.replace('.','/') + ".yml", "r" ) as config_f:
+		with open( spider.__module__.replace('.','/') + ".yml", "r" ) as config_f:
 			return yaml.safe_load( config_f )
 	except FileNotFoundError:
-		return None
+		return {}
 
 @lru_cache( maxsize = 64 )
 def resource( path ):
@@ -80,7 +83,7 @@ def spiders( module, namespace = None, naming = None ):
 		if not isinstance( spider, SpiderCompose ):
 			spider = SpiderCompose._Compose(
 				s_name = spider.name,
-				s_config = config( spider.__module__ ),
+				s_config = config( spider ),
 				base_spidercls = spider
 			)
 

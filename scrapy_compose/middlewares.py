@@ -33,7 +33,7 @@ class ScrapyComposeMiddleware(object):
 		from scrapy_compose.utils.load import config as load_config
 		from scrapy_compose.items import DynamicItem
 
-		config = ( load_config( spider.__module__ ) or {} ).get( "output", {} )
+		config = ( load_config( spider ) or {} ).get( "output", {} )
 
 		if not config:
 			for i in result:

@@ -9,15 +9,8 @@ def compose( func ):
 	def func_wrapper( self, response, *args, **kwargs ):
 		pname = func.__name__
 
-		if hasattr( self.__class__, "config" ):
-			spider_config = getattr( self.__class__, "config" )
-		else:
-			spider_config = load_config( func.__module__ )
-
-		if spider_config is None:
-			return func( self, response )
-
-		p_config = ( spider_config
+		s_config = load_config( self ) 
+		p_config = ( s_config
 			.get( "parsers", {} )
 			.get( pname, {} )
 		)
@@ -25,12 +18,10 @@ def compose( func ):
 		if not p_config:
 			return func( self, response )
 
-		syntax = spider_config.get( "syntax", compose_settings.DEFAULT_SYNTAX )
-
 		parser = ParserCompose(
 			key = pname,
 			value = p_config,
-			syntax = syntax,
+			syntax = s_config.get( "syntax", compose_settings.DEFAULT_SYNTAX ),
 			spider = self,
 		)
 
