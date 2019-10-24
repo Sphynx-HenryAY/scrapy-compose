@@ -3,7 +3,7 @@ from scrapy.commands.list import Command as BaseCommand
 class Command( BaseCommand ):
 
 	def syntax( self ):
-		return "[<pattern]"
+		return "[options|<pattern>]"
 
 	def short_desc( self ):
 		return "List available spiders matched with pattern if provided."

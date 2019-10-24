@@ -130,7 +130,7 @@ class EntryPoint:
 
 	def print_unknown_command( self ):
 		self.print_header()
-		print( "Unknown or unavailable command: {self.action}" )
+		print( "Unknown or unavailable command: " + self.action )
 		print( 'Use "scrapy-compose" to see available commands' )
 
 	def __call__( self ):
