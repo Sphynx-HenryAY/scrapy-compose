@@ -36,51 +36,78 @@ class SpiderCompose( ComposeField ):
 							key = f_name,
 							value = yaml.safe_load( open( f ) )
 						)
-						.composed
 					)
 
 		return namespace
 
 	def __init__( self, key = None, value = None, **kwargs ):
 		super( SpiderCompose, self ).__init__( key = key, value = value, **kwargs )
+
+		key = self.key
+
+		self.name = key
 		self.composed = self._Compose(
-			s_name = self.key,
+			s_name = key,
 			s_config = self.value,
 		)
 
 	@staticmethod
 	def _Compose( s_name = None, s_config = None, base_spidercls = None ):
 
+		from scrapy import Spider as BaseSpider
+
+		if base_spidercls is None:
+			base_spidercls = BaseSpider
+
+		if s_config is None:
+			return base_spidercls
+
 		if s_name is None:
 			from scrapy_compose.utils import genuid
 			s_name = genuid()
 
-		if s_config is None:
-			s_config = {}
+		from scrapy_compose import compose
+		from scrapy_compose.compose_settings import DEFAULT_SYNTAX
+		from scrapy_compose.fields import ComposeFields
 
-		if base_spidercls is None:
-			from scrapy import Spider as base_spidercls
+		ParserCompose = ComposeFields.ParserCompose
+
+		base_parse = BaseSpider.parse
+		syntax = s_config.get( "syntax", DEFAULT_SYNTAX )
 
 		class spidercls( base_spidercls ):
 
-			from .fields import ComposeFields
-
 			name = s_name
+			config = s_config
 
-			for k, v in s_config.items():
+			parsers = {}
 
-				if k in ComposeFields.fields:
-					Compose = ComposeFields.fields[ k ]
-					for c_name, c_config in v.items():
-						v[ c_name ] = Compose( key = c_name, value = c_config )
+			# name can be overwritten by config
+			for k, v in config.items():
+				if k not in ComposeFields.fields:
+					vars()[ k ] = v
 
-				vars()[ k ] = v
+			for p_name, p_config in config.get( ParserCompose.fkey, {} ).items():
+				parser = getattr( base_spidercls, p_name, None )
 
-			def __init__( spider, *args, **kwargs ):
-				from scrapy_compose.fields.compose import ParserCompose
+				if parser and parser is not base_parse:
+					parser = compose( parser )
 
-				for p_name, parser in getattr( spider, ParserCompose.fkey ).items():
-					parser.spider = spider
-					setattr( spider, p_name, parser )
+				else:
+					parser = ParserCompose(
+						key = p_name,
+						value = p_config,
+					)
+					parsers[ p_name ] = parser
+
+				vars()[ p_name ] = parser
+
+			def __init__( self, *args, **kwargs ):
+
+				for p_name, parser in self.parsers.items():
+					parser.spider = self
+					setattr( self, p_name, parser )
+
+				super( base_spidercls, self ).__init__( *args, **kwargs )
 
 		return spidercls
