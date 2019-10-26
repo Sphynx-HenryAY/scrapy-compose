@@ -80,7 +80,9 @@ def spiders( module, namespace = None, naming = None ):
 
 	for s_name, spider in spiders.items():
 
-		if not isinstance( spider, SpiderCompose ):
+		if isinstance( spider, SpiderCompose ):
+			spider = spider.composed
+		else:
 			spider = SpiderCompose._Compose(
 				s_name = spider.name,
 				s_config = config( spider ),

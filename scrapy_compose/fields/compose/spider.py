@@ -45,7 +45,6 @@ class SpiderCompose( ComposeField ):
 
 		key = self.key
 
-		self.name = key
 		self.composed = self._Compose(
 			s_name = key,
 			s_config = self.value,
