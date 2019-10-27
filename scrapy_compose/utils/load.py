@@ -83,10 +83,13 @@ def spiders( module, namespace = None, naming = None ):
 		if isinstance( spider, SpiderCompose ):
 			spider = spider.composed
 		else:
-			spider = SpiderCompose._Compose(
-				s_name = spider.name,
-				s_config = config( spider ),
-				base_spidercls = spider
+			spider = (
+				SpiderCompose(
+					key = spider.name,
+					value = config( spider ),
+					model = spider
+				)
+				.composed
 			)
 
 		spider.name = naming.format( **locals() )

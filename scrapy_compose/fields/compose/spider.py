@@ -4,6 +4,7 @@ from .fields import ComposeField
 class SpiderCompose( ComposeField ):
 
 	support_ext = [ "yml", "yaml", "json" ]
+	_composed = None
 
 	@classmethod
 	def from_package( cls, pkg_name, namespace = None ):
@@ -40,34 +41,37 @@ class SpiderCompose( ComposeField ):
 
 		return namespace
 
-	def __init__( self, key = None, value = None, **kwargs ):
+	def __init__( self, key = None, value = None, model = None, **kwargs ):
+
+		if model is None:
+			from scrapy import Spider as model
+
+		self.model = model
+		value.update( getattr( model, "config", {} ) )
+
+		if key is None:
+			from scrapy_compose.utils import genuid
+			key = genuid()
+
 		super( SpiderCompose, self ).__init__( key = key, value = value, **kwargs )
 
-		key = self.key
-
-		self.composed = self._Compose(
-			s_name = key,
-			s_config = self.value,
-		)
+	@property
+	def composed( self ):
+		if not self._composed:
+			self._composed = self._Compose(
+				s_name = self.key,
+				s_config = self.value,
+				base_spidercls = self.model
+			)
+		return self._composed
 
 	@staticmethod
 	def _Compose( s_name = None, s_config = None, base_spidercls = None ):
 
-		from scrapy import Spider as BaseSpider
-
-		if base_spidercls is None:
-			base_spidercls = BaseSpider
-
-		if s_config is None:
-			s_config = {}
-
-		s_config.update( getattr( base_spidercls, "config", {} ) )
 		if not s_config:
 			return base_spidercls
 
-		if s_name is None:
-			from scrapy_compose.utils import genuid
-			s_name = genuid()
+		from scrapy import Spider as BaseSpider
 
 		from scrapy_compose.decorators import compose
 		from scrapy_compose.compose_settings import DEFAULT_SYNTAX
@@ -100,6 +104,7 @@ class SpiderCompose( ComposeField ):
 					parser = ParserCompose(
 						key = p_name,
 						value = p_config,
+						syntax = syntax
 					)
 					parsers[ p_name ] = parser
 
