@@ -63,13 +63,3 @@ def package( pkg_name, namespace = None, key = None ):
 		namespace.pop( mod_name, None )
 
 	return namespace
-
-def settings( path ):
-	from importlib import import_module
-	module = import_module( path )
-
-	return {
-		k: getattr( module, k )
-		for k in dir( module )
-		if k.isupper()
-	}
