@@ -28,23 +28,18 @@ class ScrapyComposeMiddleware(object):
 		# Must return an iterable of Request, dict or Item objects.
 
 		from scrapy import Item
+		from scrapy_compose.decorators import Output
 
-		from scrapy_compose.decorators import output
-		from scrapy_compose.utils.load import config as load_config
-		from scrapy_compose.items import DynamicItem
+		output = Output( spider )
 
-		config = ( load_config( spider ) or {} ).get( "output", {} )
-
-		if not config:
+		if spider not in output.cache:
 			for i in result:
 				yield i
 			return
 
 		for i in result:
-			if isinstance( i, Item ):
-				yield DynamicItem(
-					**output( i, config = config )
-				)
+			if isinstance( i, Item ) or isinstance( i, dict ):
+				yield output.process( spider, i )
 			else:
 				yield i
 
