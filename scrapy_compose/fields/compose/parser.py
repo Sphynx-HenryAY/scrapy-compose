@@ -9,8 +9,6 @@ class ParserCompose( ComposeField, ParserField ):
 	def __init__( self, spider = None, syntax = None, **kwargs ):
 		super( ParserCompose, self ).__init__( **kwargs )
 
-		from scrapy.utils.project import get_project_settings
-
 		self.spider = spider
 		self.composed = self.get_endpoints
 
@@ -30,7 +28,7 @@ class ParserCompose( ComposeField, ParserField ):
 	def fields( self ):
 		if not self._fields:
 			self._fields = [
-				ParserFields.from_config( v )( key = k, value = v )
+				ParserFields.fields[ v ]( key = k, value = v )
 				for k, v in self.value.items()
 			]
 		return self._fields

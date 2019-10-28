@@ -10,7 +10,7 @@ class NestedField( BaseField ):
 		value = self.value
 		rvalue = value[ "value" ]
 
-		field = ParserFields.from_config( rvalue )(
+		field = ParserFields.fields[ rvalue ](
 			key = value[ "key" ],
 			value = rvalue
 		)
