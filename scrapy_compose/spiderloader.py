@@ -3,9 +3,17 @@ from scrapy.spiderloader import SpiderLoader as BaseSpiderLoader
 class SpiderLoader( BaseSpiderLoader ):
 
 	def _load_all_spiders( self ):
-		from .utils.load import spiders as load_spiders
+		from scrapy_compose.fields.compose.spider import SpiderCompose
+
+		spiders = self._spiders
+
 		for name in self.spider_modules:
-			self._spiders.update( {
-				s.name: s
-				for s in load_spiders( name ).values()
-			} )
+
+			pkg_name = name.split( ".", 1 )[ 0 ]
+
+			for s_name, s_compose in SpiderCompose.from_package( name ).items():
+
+				spider = s_compose.composed
+				spider.name = pkg_name + "." + spider.name
+
+				spiders[ spider.name ] = spider

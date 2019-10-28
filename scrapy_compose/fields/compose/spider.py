@@ -1,5 +1,7 @@
 
 from .fields import ComposeField
+from scrapy import Spider as BaseSpider
+
 
 class SpiderCompose( ComposeField ):
 
@@ -13,30 +15,33 @@ class SpiderCompose( ComposeField ):
 			namespace = {}
 
 		import yaml
-		import glob
-		from importlib import import_module
-		from os.path import join, dirname as get_dirname
+		from os.path import basename
+		from inspect import isclass
+		from scrapy_compose.utils.load import (
+			pkg_files as load_pkg_files,
+			package as load_package,
+			config as load_config,
+		)
 
-		dirname = get_dirname( import_module( pkg_name ).__file__ )
-		support_ext = cls.support_ext
+		load_package( pkg_name, key = lambda s: (
+			isclass( s ) and
+			issubclass( s, BaseSpider ) and
+			getattr( s, "name", None ) and
+			namespace.update( { s.name: cls(
+				key = s.name,
+				value = load_config( s ),
+				model = s,
+		) } ) ) )
 
-		for f in glob.glob( join( dirname, "*" ) ):
+		for ext in cls.support_ext:
+			for f in load_pkg_files( pkg_name, "*." + ext ):
 
-			f_path, _, f_ext = f.rpartition( "." )
-			f_name = f_path.rpartition( "/" )[-1]
+				f_name = basename( f ).rpartition( "." )[0]
 
-			if f_ext in support_ext and f_name not in namespace:
-
-				try:
-					import_module( pkg_name + "." + f_name )
-					continue
-
-				except ModuleNotFoundError:
-					namespace[ f_name ] = (
-						cls(
-							key = f_name,
-							value = yaml.safe_load( open( f ) )
-						)
+				if f_name not in namespace:
+					namespace[ f_name ] = cls(
+						key = f_name,
+						value = yaml.safe_load( open( f ) )
 					)
 
 		return namespace
@@ -70,8 +75,6 @@ class SpiderCompose( ComposeField ):
 
 		if not s_config:
 			return base_spidercls
-
-		from scrapy import Spider as BaseSpider
 
 		from scrapy_compose.decorators import compose
 		from scrapy_compose.compose_settings import DEFAULT_SYNTAX
