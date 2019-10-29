@@ -7,15 +7,15 @@ except ImportError:
 @lru_cache( maxsize = 64 )
 def config( module ):
 	import yaml
+	from os.path import exists
 	from scrapy_compose.compose_settings import SUPPORT_EXTENSIONS
 
-	file_name = module.replace('.','/')
+	file_path = module.replace('.','/')
 	for ext in SUPPORT_EXTENSIONS:
-		try:
-			with open( file_name + "." + ext, "r" ) as f:
+		file_name = file_path + "." + ext
+		if exists( file_name ):
+			with open( file_name, "r" ) as f:
 				return yaml.safe_load( f )
-		except:
-			pass
 
 	return {}
 
