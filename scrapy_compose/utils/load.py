@@ -5,13 +5,19 @@ except ImportError:
 	from backports.functools_lru_cache import lru_cache
 
 @lru_cache( maxsize = 64 )
-def config( spider_module ):
+def config( module ):
 	import yaml
-	try:
-		with open( spider_module.replace('.','/') + ".yml", "r" ) as config_f:
-			return yaml.safe_load( config_f )
-	except FileNotFoundError:
-		return {}
+	from scrapy_compose.compose_settings import SUPPORT_EXTENSIONS
+
+	file_name = module.replace('.','/')
+	for ext in SUPPORT_EXTENSIONS:
+		try:
+			with open( file_name + "." + ext, "r" ) as f:
+				return yaml.safe_load( f )
+		except:
+			pass
+
+	return {}
 
 @lru_cache( maxsize = 64 )
 def resource( path ):

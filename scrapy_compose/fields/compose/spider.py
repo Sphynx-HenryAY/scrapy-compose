@@ -5,7 +5,10 @@ from scrapy import Spider as BaseSpider
 
 class SpiderCompose( ComposeField ):
 
-	support_ext = [ "yml", "yaml", "json" ]
+	from scrapy_compose.compose_settings import (
+		SUPPORT_EXTENSIONS as support_ext
+	)
+
 	_composed = None
 
 	@classmethod
