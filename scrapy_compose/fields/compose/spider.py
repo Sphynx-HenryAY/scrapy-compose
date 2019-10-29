@@ -79,7 +79,7 @@ class SpiderCompose( ComposeField ):
 		if not s_config:
 			return base_spidercls
 
-		from scrapy_compose.decorators import compose
+		from scrapy_compose.decorators import compose, Output
 		from scrapy_compose.compose_settings import DEFAULT_SYNTAX
 		from scrapy_compose.fields import ComposeFields
 
@@ -115,6 +115,15 @@ class SpiderCompose( ComposeField ):
 
 				parsers[ p_name ] = p_composed
 				vars()[ p_name ] = parser
+
+			def __new__( cls, *args, **kwargs ):
+				output = Output( spider = cls )
+
+				for p_name in cls.parsers:
+					setattr( cls, p_name, output( getattr( cls, p_name ) ) )
+
+				cls.output = output
+				return super( spidercls, cls ).__new__( cls )
 
 			def __init__( self, *args, **kwargs ):
 

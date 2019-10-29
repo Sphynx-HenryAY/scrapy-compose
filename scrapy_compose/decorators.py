@@ -15,7 +15,7 @@ def compose( func ):
 			)
 
 			if not p_config:
-				return func( self, response )
+				return func( self, response, *args, **kwargs )
 
 			parser = ParserCompose(
 				key = p_name,
@@ -51,8 +51,13 @@ class Output:
 		if s_cls in self.cache:
 			return self.cache[ s_cls ]
 
-		from scrapy_compose.utils.load import config as load_config
-		output = load_config( spider.__module__ ).get( "output", {} )
+		if hasattr( spider, "config" ):
+			config = spider.config
+		else:
+			from scrapy_compose.utils.load import config as load_config
+			config = load_config( spider.__module__ )
+
+		output = config.get( "output", {} )
 
 		if not output:
 			return
@@ -103,6 +108,7 @@ class Output:
 		return context
 
 	def __call__( self, func ):
+		from scrapy import Item as BaseItem
 		from scrapy_compose.items import DynamicItem
 		process = self.process
 
@@ -110,7 +116,10 @@ class Output:
 
 			self._cache( spider )
 
-			for item in func( spider, response ):
-				yield DynamicItem( **process( spider, item ) )
+			for i in func( spider, response ):
+				if isinstance( i, BaseItem ):
+					yield DynamicItem( **process( spider, i ) )
+				else:
+					yield i
 
 		return func_wrapper
