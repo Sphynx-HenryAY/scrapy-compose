@@ -1,28 +1,30 @@
 
 def compose( func ):
 
-	from . import compose_settings
-	from scrapy_compose.fields.compose import ParserCompose
-	from scrapy_compose.utils.load import config as load_config
-
 	def func_wrapper( self, response, *args, **kwargs ):
-		pname = func.__name__
+		p_name = func.__name__
 
-		s_config = load_config( self ) 
-		p_config = ( s_config
-			.get( "parsers", {} )
-			.get( pname, {} )
-		)
+		if not hasattr( self, "parsers" ):
+			from scrapy_compose.fields.compose import ParserCompose
+			from scrapy_compose.utils.load import config as load_config
 
-		if not p_config:
-			return func( self, response )
+			s_config = load_config( self.__module__ )
+			p_config = ( s_config
+				.get( "parsers", {} )
+				.get( p_name, {} )
+			)
 
-		parser = ParserCompose(
-			key = pname,
-			value = p_config,
-			syntax = s_config.get( "syntax", compose_settings.DEFAULT_SYNTAX ),
-			spider = self,
-		)
+			if not p_config:
+				return func( self, response )
+
+			parser = ParserCompose(
+				key = p_name,
+				value = p_config,
+				syntax = s_config.get( "syntax", None ),
+				spider = self,
+			)
+		else:
+			parser = self.parsers[ p_name ]
 
 		if parser.has_endpoints:
 			return parser( response )
@@ -50,7 +52,7 @@ class Output:
 			return self.cache[ s_cls ]
 
 		from scrapy_compose.utils.load import config as load_config
-		output = load_config( spider ).get( "output", {} )
+		output = load_config( spider.__module__ ).get( "output", {} )
 
 		if not output:
 			return
