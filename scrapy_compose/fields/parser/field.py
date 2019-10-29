@@ -19,16 +19,18 @@ class ParserField( Field ):
 	def __init__( self, syntax = None, **kwargs ):
 		super( ParserField, self ).__init__( **kwargs )
 
-		if syntax is not None:
-			self.syntax = syntax
-		elif "syntax" in self.meta:
-			self.syntax = self.meta[ "syntax" ]
+		if "syntax" in self.meta:
+			syntax = self.meta.pop( "syntax" )
+		elif syntax is not None:
+			syntax = syntax
 		else:
 			from scrapy_compose.compose_settings import DEFAULT_SYNTAX
-			self.syntax = DEFAULT_SYNTAX
+			syntax = DEFAULT_SYNTAX
 
-		if self.syntax not in self.accept_syntax:
+		if syntax not in self.accept_syntax:
 			raise TypeError( syntax + " is not accepted." )
+
+		self.syntax = syntax
 
 		if self.process_timing:
 			self._init_processors()

@@ -6,23 +6,11 @@ class ParserCompose( ComposeField, ParserField ):
 
 	_fields = None
 
-	def __init__( self, spider = None, syntax = None, **kwargs ):
+	def __init__( self, spider = None, **kwargs ):
 		super( ParserCompose, self ).__init__( **kwargs )
 
 		self.spider = spider
 		self.composed = self.get_endpoints
-
-		if syntax is not None:
-			self.syntax = syntax
-		else:
-			from scrapy_compose.compose_settings import DEFAULT_SYNTAX
-			self.syntax = self.meta.pop( "syntax", DEFAULT_SYNTAX )
-
-	def get_context( self, response ):
-		ctx = {}
-		for field in self.fields:
-			ctx.update( field.get_context( response ) )
-		return ctx
 
 	@property
 	def fields( self ):
@@ -36,6 +24,12 @@ class ParserCompose( ComposeField, ParserField ):
 	@property
 	def has_endpoints( self ):
 		return bool( self.meta )
+
+	def get_context( self, response ):
+		ctx = {}
+		for field in self.fields:
+			ctx.update( field.get_context( response ) )
+		return ctx
 
 	def get_endpoints( self, response ):
 
