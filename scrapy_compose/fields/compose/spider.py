@@ -29,7 +29,7 @@ class SpiderCompose( ComposeField ):
 			getattr( s, "name", None ) and
 			namespace.update( { s.name: cls(
 				key = s.name,
-				value = load_config( s ),
+				value = load_config( s.__module__ ),
 				model = s,
 		) } ) ) )
 
@@ -41,7 +41,7 @@ class SpiderCompose( ComposeField ):
 				if f_name not in namespace:
 					namespace[ f_name ] = cls(
 						key = f_name,
-						value = yaml.safe_load( open( f ) )
+						value = load_config( pkg_name + "." + f_name )
 					)
 
 		return namespace
@@ -99,25 +99,24 @@ class SpiderCompose( ComposeField ):
 
 			for p_name, p_config in config.get( ParserCompose.fkey, {} ).items():
 				parser = getattr( base_spidercls, p_name, None )
+				p_composed = ParserCompose(
+					key = p_name,
+					value = p_config,
+					syntax = syntax
+				)
 
 				if parser and parser is not base_parse:
 					parser = compose( parser )
-
 				else:
-					parser = ParserCompose(
-						key = p_name,
-						value = p_config,
-						syntax = syntax
-					)
-					parsers[ p_name ] = parser
+					parser = p_composed
 
+				parsers[ p_name ] = p_composed
 				vars()[ p_name ] = parser
 
 			def __init__( self, *args, **kwargs ):
 
 				for p_name, parser in self.parsers.items():
 					parser.spider = self
-					setattr( self, p_name, parser )
 
 				super( base_spidercls, self ).__init__( *args, **kwargs )
 
