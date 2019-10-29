@@ -5,15 +5,10 @@ except ImportError:
 	from backports.functools_lru_cache import lru_cache
 
 @lru_cache( maxsize = 64 )
-def config( spider ):
-
-	if hasattr( spider.__class__, "config" ):
-		return spider.__class__.config
-
+def config( spider_module ):
 	import yaml
-
 	try:
-		with open( spider.__module__.replace('.','/') + ".yml", "r" ) as config_f:
+		with open( spider_module.replace('.','/') + ".yml", "r" ) as config_f:
 			return yaml.safe_load( config_f )
 	except FileNotFoundError:
 		return {}
