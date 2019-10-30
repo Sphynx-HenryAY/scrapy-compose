@@ -31,7 +31,7 @@ class ParserCompose( ComposeField, ParserField ):
 			ctx.update( field.get_context( response ) )
 		return ctx
 
-	def get_endpoints( self, response ):
+	def get_endpoints( self, *response ):
 
 		if not self.has_endpoints:
 			yield None
@@ -39,10 +39,11 @@ class ParserCompose( ComposeField, ParserField ):
 
 		from scrapy import Request
 
-		selector = self.get_selector( response )
-
+		response = response[-1]
 		meta = self.meta
 		spider = self.spider
+
+		selector = self.get_selector( response )
 
 		if "item" in meta:
 			from scrapy_compose.utils.load import resource as load_resource
