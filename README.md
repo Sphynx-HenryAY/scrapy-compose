@@ -1,5 +1,5 @@
 # scrapy-compose
-An Python Scrapy implementation that allows defining and running programming-language-independent crawling projects.
+An Python Scrapy extension that allows defining and running programming-language-independent crawling projects.
 
 Development Roadmap
 --
