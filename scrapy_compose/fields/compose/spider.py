@@ -79,7 +79,7 @@ class SpiderCompose( ComposeField ):
 		if not s_config:
 			return base_spidercls
 
-		from scrapy_compose.decorators import compose, Output
+		from scrapy_compose.utils.decorators import compose, Output
 		from scrapy_compose.compose_settings import DEFAULT_SYNTAX
 		from scrapy_compose.fields import ComposeFields
 

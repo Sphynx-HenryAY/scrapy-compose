@@ -28,7 +28,7 @@ class ScrapyComposeMiddleware(object):
 		# Must return an iterable of Request, dict or Item objects.
 
 		from scrapy import Item
-		from scrapy_compose.decorators import Output
+		from scrapy_compose.utils.decorators import Output
 
 		output = Output( spider )
 
